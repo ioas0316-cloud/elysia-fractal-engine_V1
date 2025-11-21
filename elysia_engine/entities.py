@@ -1,10 +1,15 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, Optional, Protocol
+from dataclasses import dataclass, field, asdict
+from typing import Any, Dict, Optional, Protocol, TYPE_CHECKING
 
 from .efp import EFPState
 from .roles import ROLE_PROFILES, RoleProfile
+from .physics import PhysicsState
+
+if TYPE_CHECKING:
+    from .tensor_coil import CoilStructure
+    from .physics import PhysicsWorld
 
 
 class WorldLike(Protocol):
@@ -17,6 +22,7 @@ class Entity:
 
     id: str
     state: EFPState = field(default_factory=EFPState)
+    physics: PhysicsState = field(default_factory=PhysicsState)
     data: Dict[str, Any] = field(default_factory=dict)
     role: Optional[str] = None
     f_body: float = 0.0
@@ -50,6 +56,36 @@ class Entity:
             return None
         return ROLE_PROFILES.get(self.role)
 
+    def apply_physics(self, coil: Optional[CoilStructure], world_physics: Optional[PhysicsWorld], dt: float = 1.0) -> None:
+        """
+        Applies the Digital Physics laws:
+        1. Coil Acceleration (Railgun)
+        2. Gravity (Attractors)
+        3. Hyperdrive (Superconductivity)
+        """
+        # 1. Railgun / Coil field
+        if coil:
+            coil.railgun_accelerate(self.physics, dt)
+
+        # 2. Gravity
+        if world_physics:
+            gravity = world_physics.get_net_force(self.physics.position)
+            self.physics.apply_force(gravity, dt)
+
+        # 3. Hyperdrive check
+        # If we successfully hyperdrive to an attractor, we might stop other processing?
+        if coil and world_physics:
+            # Try to jump to any attractor
+            for attractor in world_physics.attractors:
+                did_jump = coil.superconduct(self.physics, attractor)
+                if did_jump:
+                    # Jump happened. Energy surge?
+                    self.state.energy += 100.0
+                    break
+
+        # Step physics
+        self.physics.step(dt)
+
     def step(self, world: WorldLike, dt: float = 1.0) -> None:
         self.update_force(world)
         self.state.step(dt=dt)
@@ -59,6 +95,7 @@ class Entity:
             "id": self.id,
             "role": self.role,
             "efp": self.state.as_dict(),
+            "physics": asdict(self.physics),
             "force_components": {
                 "body": self.f_body,
                 "soul": self.f_soul,
