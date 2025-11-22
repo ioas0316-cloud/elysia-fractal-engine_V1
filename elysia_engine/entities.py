@@ -6,6 +6,7 @@ from typing import Any, Dict, Optional, Protocol, TYPE_CHECKING
 from .efp import EFPState
 from .roles import ROLE_PROFILES, RoleProfile
 from .physics import PhysicsState
+from .quantum import QuantumDNA
 
 if TYPE_CHECKING:
     from .tensor_coil import CoilStructure
@@ -23,6 +24,7 @@ class Entity:
     id: str
     state: EFPState = field(default_factory=EFPState)
     physics: PhysicsState = field(default_factory=PhysicsState)
+    dna: Optional[QuantumDNA] = None
     data: Dict[str, Any] = field(default_factory=dict)
     role: Optional[str] = None
     f_body: float = 0.0
@@ -89,9 +91,11 @@ class Entity:
     def step(self, world: WorldLike, dt: float = 1.0) -> None:
         self.update_force(world)
         self.state.step(dt=dt)
+        if self.dna:
+            self.dna.step(dt)
 
     def to_payload(self) -> Dict[str, Any]:
-        return {
+        payload = {
             "id": self.id,
             "role": self.role,
             "efp": self.state.as_dict(),
@@ -103,3 +107,6 @@ class Entity:
             },
             "data": self.data,
         }
+        if self.dna:
+            payload["dna"] = self.dna.as_dict()
+        return payload

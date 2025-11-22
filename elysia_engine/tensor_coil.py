@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, List
 
 from .math_utils import Vector3, Quaternion
 from .physics import PhysicsState, Attractor
+from .entities import Entity
 
 
 @dataclass
@@ -114,3 +115,80 @@ class CoilStructure:
             return True
 
         return False
+
+    def incubate(self, entities: List[Entity], world_time: float) -> List[Entity]:
+        """
+        Checks for entities colliding within the high-energy coil field
+        and triggers Quantum Crossover (Breeding).
+        """
+        new_entities = []
+
+        # 1. Filter entities effectively inside the coil's influence
+        candidates = []
+        for ent in entities:
+            dist = (ent.physics.position - self.center).magnitude
+            # Check if roughly near the radius ring (donut shape) or just inside sphere
+            # Simple sphere check for now + Must have DNA
+            if dist < (self.radius + 5.0) and ent.dna is not None:
+                candidates.append(ent)
+
+        # 2. Brute-force collision check (O(N^2) but N is small)
+        # Limit collision distance
+        interaction_dist = 1.0
+
+        processed = set()
+
+        for i in range(len(candidates)):
+            p1 = candidates[i]
+            if p1.id in processed:
+                continue
+
+            for j in range(i + 1, len(candidates)):
+                p2 = candidates[j]
+                if p2.id in processed:
+                    continue
+
+                # Check distance
+                d = (p1.physics.position - p2.physics.position).magnitude
+                if d < interaction_dist:
+                    # COLLISION! Trigger Crossover
+                    child_dna = p1.dna.interfere(p2.dna)
+
+                    if child_dna:
+                        # Birth successful
+                        child_id = f"child_{world_time:.2f}_{len(new_entities)}"
+
+                        # Create Child Entity
+                        child = Entity(id=child_id)
+                        child.dna = child_dna
+
+                        # Position child between parents
+                        mid_pos = (p1.physics.position + p2.physics.position) * 0.5
+                        child.physics.position = mid_pos
+
+                        # Eject child? Give random velocity
+                        child.physics.velocity = Vector3(
+                            (p1.physics.velocity.x + p2.physics.velocity.x) * 0.5,
+                            (p1.physics.velocity.y + p2.physics.velocity.y) * 0.5,
+                            (p1.physics.velocity.z + p2.physics.velocity.z) * 0.5
+                        )
+
+                        # Inherit Data (Simple mix for now)
+                        child.data = {"desc": f"Born from {p1.id} & {p2.id}"}
+
+                        new_entities.append(child)
+
+                        # Energy Cost for Parents (Conservation Law)
+                        p1.dna.amplitude *= 0.8
+                        p2.dna.amplitude *= 0.8
+
+                        # Mark processed so they don't breed again this tick
+                        processed.add(p1.id)
+                        processed.add(p2.id)
+                    else:
+                        # Destructive interference (Mutation/Death?)
+                        # Just lose energy
+                        p1.dna.amplitude *= 0.9
+                        p2.dna.amplitude *= 0.9
+
+        return new_entities
