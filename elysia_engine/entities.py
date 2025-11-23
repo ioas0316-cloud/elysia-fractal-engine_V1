@@ -28,6 +28,7 @@ class Entity:
     state: EFPState = field(default_factory=EFPState)
     physics: PhysicsState = field(default_factory=PhysicsState)
     soul: Optional[SoulTensor] = None # Replaces QuantumDNA
+    bonds: list[str] = field(default_factory=list) # IDs of bonded entities (Dimensional Evolution)
     data: Dict[str, Any] = field(default_factory=dict)
     role: Optional[str] = None
     f_body: float = 0.0

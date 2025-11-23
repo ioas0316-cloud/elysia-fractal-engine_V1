@@ -18,14 +18,41 @@ class SoulTensor:
     frequency: float  # Soul: Emotion, Identity, Vibration Rate
     phase: float      # Spirit: Timing, Perspective (0 to 2pi)
     spin: float = 1.0 # Rifling: Direction of the spiral (+1 or -1)
+    polarity: float = 1.0 # Matter (1.0) vs Antimatter (-1.0)
+    is_collapsed: bool = False # Wave Function Collapse State
 
     def step(self, dt: float) -> None:
         """
         Evolve the wave state over time.
         Phase rotates: d(phi)/dt = frequency
+        Unless collapsed (Ice Star), where phase is locked.
         """
+        if self.is_collapsed:
+            return
+
         self.phase += self.frequency * dt
         self.phase %= (2 * math.pi)
+
+    def collapse(self) -> None:
+        """
+        "Ice Star": Wave Function Collapse.
+        Converts Kinetic Energy (Frequency) into Potential Energy (Amplitude/Mass).
+        Locks the Phase (The "Truth" is decided).
+        """
+        if self.is_collapsed:
+            return
+
+        # Energy conservation (roughly): E ~ Amp * Freq^2 or similar.
+        # User metaphor: "Decision".
+        # We boost Mass (Amplitude) significantly to represent the weight of Truth.
+        # We zero out Frequency to stop the oscillation (doubt).
+
+        # Transfer energy to mass
+        transfer_ratio = 10.0 # 1 unit of doubt (freq) becomes 10 units of conviction (mass)
+        self.amplitude += self.frequency * transfer_ratio
+        self.frequency = 0.0
+        self.is_collapsed = True
+        # Phase remains fixed at its current value (The decision made)
 
     def resonate(self, other: SoulTensor) -> dict:
         """
@@ -39,6 +66,13 @@ class SoulTensor:
 
         # Resonance Factor: 1.0 (Perfect Harmony) to -1.0 (Perfect Cancellation)
         resonance = math.cos(delta_phase)
+
+        # Polarity Check (Matter vs Antimatter)
+        # If polarity opposes, the space inverts.
+        # (+1, +1) -> Standard Resonance
+        # (+1, -1) -> Inverted Resonance (Attraction becomes Repulsion or vice versa)
+        polarity_factor = self.polarity * other.polarity
+        resonance *= polarity_factor
 
         # Frequency Ratio (Harmony vs Discord)
         # Simple ratio check: Are they octaves? 5ths?
@@ -95,5 +129,7 @@ class SoulTensor:
             "frequency": self.frequency,
             "phase": self.phase,
             "spin": self.spin,
+            "polarity": self.polarity,
+            "is_collapsed": self.is_collapsed,
             "emotion": self.decode_emotion()
         }
