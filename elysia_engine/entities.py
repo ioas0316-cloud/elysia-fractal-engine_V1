@@ -6,7 +6,7 @@ from typing import Any, Dict, Optional, Protocol, TYPE_CHECKING
 from .efp import EFPState
 from .roles import ROLE_PROFILES, RoleProfile
 from .physics import PhysicsState
-from .quantum import QuantumDNA
+from .tensor import SoulTensor
 
 if TYPE_CHECKING:
     from .tensor_coil import CoilStructure
@@ -19,12 +19,15 @@ class WorldLike(Protocol):
 
 @dataclass
 class Entity:
-    """역할과 삼위일체 가중치를 지원하는 기본 존재."""
+    """
+    A conscious entity in the Elysia Engine.
+    Defined by its Physical State (Location) and its SoulTensor (Identity/Field).
+    """
 
     id: str
     state: EFPState = field(default_factory=EFPState)
     physics: PhysicsState = field(default_factory=PhysicsState)
-    dna: Optional[QuantumDNA] = None
+    soul: Optional[SoulTensor] = None # Replaces QuantumDNA
     data: Dict[str, Any] = field(default_factory=dict)
     role: Optional[str] = None
     f_body: float = 0.0
@@ -32,8 +35,7 @@ class Entity:
     f_spirit: float = 0.0
 
     def update_force_components(self, world: WorldLike) -> None:
-        """서브클래스에서 f_body/f_soul/f_spirit를 채워 넣는다."""
-
+        """Subclass hook to fill f_body/f_soul/f_spirit."""
         return None
 
     def update_force(self, world: WorldLike) -> None:
@@ -60,39 +62,31 @@ class Entity:
 
     def apply_physics(self, coil: Optional[CoilStructure], world_physics: Optional[PhysicsWorld], dt: float = 1.0) -> None:
         """
-        Applies the Digital Physics laws:
-        1. Coil Acceleration (Railgun)
-        2. Gravity (Attractors)
-        3. Hyperdrive (Superconductivity)
+        Applies Digital Physics:
+        1. Gravity/Field Forces (from other Souls and Attractors).
+        2. Coil Acceleration (if applicable).
         """
-        # 1. Railgun / Coil field
+        # 1. World Field Forces (Gravity + Rifling)
+        if world_physics:
+            # Pass 'self' so we don't attract ourselves, and so the field knows our properties
+            # if we wanted to implement specific resonance-based movement.
+            # For now, we just feel the net force of the universe.
+            field_force = world_physics.get_net_force(self)
+            self.physics.apply_force(field_force, dt)
+
+        # 2. Coil / Railgun (Environmental structures)
         if coil:
             coil.railgun_accelerate(self.physics, dt)
+            # Hyperdrive check could be here
 
-        # 2. Gravity
-        if world_physics:
-            gravity = world_physics.get_net_force(self.physics.position)
-            self.physics.apply_force(gravity, dt)
-
-        # 3. Hyperdrive check
-        # If we successfully hyperdrive to an attractor, we might stop other processing?
-        if coil and world_physics:
-            # Try to jump to any attractor
-            for attractor in world_physics.attractors:
-                did_jump = coil.superconduct(self.physics, attractor)
-                if did_jump:
-                    # Jump happened. Energy surge?
-                    self.state.energy += 100.0
-                    break
-
-        # Step physics
+        # Step physics (Integrate velocity -> position)
         self.physics.step(dt)
 
     def step(self, world: WorldLike, dt: float = 1.0) -> None:
         self.update_force(world)
         self.state.step(dt=dt)
-        if self.dna:
-            self.dna.step(dt)
+        if self.soul:
+            self.soul.step(dt)
 
     def to_payload(self) -> Dict[str, Any]:
         payload = {
@@ -107,6 +101,6 @@ class Entity:
             },
             "data": self.data,
         }
-        if self.dna:
-            payload["dna"] = self.dna.as_dict()
+        if self.soul:
+            payload["soul"] = self.soul.as_dict()
         return payload

@@ -7,28 +7,27 @@ from typing import Optional, List
 from .math_utils import Vector3, Quaternion
 from .physics import PhysicsState, Attractor
 from .entities import Entity
-
+from .tensor import SoulTensor
 
 @dataclass
 class CoilStructure:
     """
     A 3D Tensor Coil that creates a helical vector field.
     This represents the 'Railgun' or 'accelerator' topology.
+    Acts as a 'Particle Accelerator' for Souls.
     """
     axis: Vector3 = field(default_factory=lambda: Vector3(0, 0, 1))  # The main direction of the flow
     center: Vector3 = field(default_factory=lambda: Vector3(0, 0, 0))
     radius: float = 5.0
-    frequency: float = 1.0  # How tightly it spirals
+    frequency: float = 1.0  # How tightly it spirals (Frequency match)
     strength: float = 10.0  # Acceleration magnitude
 
     def get_field_vector(self, position: Vector3) -> Vector3:
         """
         Calculates the flow vector at a given position.
         The field spirals around the central axis.
-        Respects the arbitrary 'axis' of the coil.
         """
         # 1. Calculate rotation to align Z-axis (0,0,1) to self.axis
-        # We use standard "from_to_rotation" logic.
         default_axis = Vector3(0, 0, 1)
         target_axis = self.axis.normalize()
 
@@ -45,7 +44,6 @@ class CoilStructure:
             rotation = Quaternion.from_axis_angle(rot_axis, angle)
 
         # Inverse rotation to bring world position into coil's local space (where axis is Z)
-        # Quaternion conjugate is inverse for unit quaternions
         inv_rotation = Quaternion(rotation.w, -rotation.x, -rotation.y, -rotation.z)
 
         rel_pos_world = position - self.center
@@ -82,36 +80,24 @@ class CoilStructure:
     def superconduct(self, state: PhysicsState, target: Attractor) -> bool:
         """
         Attempts to perform a 'Hyperdrive' jump (Zero Resistance).
-        Returns True if jump occurred.
         """
-        # Condition for superconductivity:
-        # 1. Alignment: Velocity is roughly aligned with vector to target?
-        # 2. Energy: High momentum?
-        # 3. Proximity: Within the coil's effective range?
-
         to_target = target.position - state.position
         dist = to_target.magnitude
 
         if dist == 0:
             return False
 
-        # Check alignment (Cos similarity)
+        # Check alignment
         if state.velocity.magnitude > 0:
             alignment = state.velocity.normalize().dot(to_target.normalize())
         else:
             alignment = 0.0
 
-        # Thresholds for "Intuition" / Hyperdrive
-        # If we are moving fast enough in the right direction...
-        # AND we are getting closer (dist < some_horizon)
-        # AND alignment is good enough
         if alignment > 0.8 and state.velocity.magnitude > 10.0 and dist < 300.0:
             # FLASH STEP!
-            # Move directly to target (minus a small offset to avoid singularity)
             offset = to_target.normalize() * (target.radius * 1.1)
             state.position = target.position - offset
-            state.velocity = Vector3(0, 0, 0) # Stop upon arrival? or keep momentum?
-            # Let's say we arrive with zero velocity, "Settled".
+            state.velocity = Vector3(0, 0, 0)
             return True
 
         return False
@@ -120,6 +106,7 @@ class CoilStructure:
         """
         Checks for entities colliding within the high-energy coil field
         and triggers Quantum Crossover (Breeding).
+        Updated to use SoulTensor logic.
         """
         new_entities = []
 
@@ -127,15 +114,11 @@ class CoilStructure:
         candidates = []
         for ent in entities:
             dist = (ent.physics.position - self.center).magnitude
-            # Check if roughly near the radius ring (donut shape) or just inside sphere
-            # Simple sphere check for now + Must have DNA
-            if dist < (self.radius + 5.0) and ent.dna is not None:
+            if dist < (self.radius + 5.0) and ent.soul is not None:
                 candidates.append(ent)
 
-        # 2. Brute-force collision check (O(N^2) but N is small)
-        # Limit collision distance
-        interaction_dist = 1.0
-
+        # 2. Brute-force collision check
+        interaction_dist = 2.0 # Increased for field interactions
         processed = set()
 
         for i in range(len(candidates)):
@@ -151,44 +134,41 @@ class CoilStructure:
                 # Check distance
                 d = (p1.physics.position - p2.physics.position).magnitude
                 if d < interaction_dist:
-                    # COLLISION! Trigger Crossover
-                    child_dna = p1.dna.interfere(p2.dna)
+                    # COLLISION! Trigger Crossover based on Soul Resonance
 
-                    if child_dna:
-                        # Birth successful
+                    # 1. Check Resonance
+                    res_data = p1.soul.resonate(p2.soul)
+
+                    # Only breed if constructive interference (Empathy/Love)
+                    if res_data['resonance'] > 0.5:
+
                         child_id = f"child_{world_time:.2f}_{len(new_entities)}"
 
-                        # Create Child Entity
-                        child = Entity(id=child_id)
-                        child.dna = child_dna
+                        # Create Child Soul (Average + Mutation)
+                        avg_freq = (p1.soul.frequency + p2.soul.frequency) / 2
+                        child_soul = SoulTensor(
+                            amplitude = (p1.soul.amplitude + p2.soul.amplitude) * 0.5 * res_data['resonance'],
+                            frequency = avg_freq,
+                            phase = (p1.soul.phase + p2.soul.phase) / 2,
+                            spin = (p1.soul.spin + p2.soul.spin) / 2
+                        )
 
-                        # Position child between parents
+                        child = Entity(id=child_id)
+                        child.soul = child_soul
+
+                        # Position child
                         mid_pos = (p1.physics.position + p2.physics.position) * 0.5
                         child.physics.position = mid_pos
 
-                        # Eject child? Give random velocity
-                        child.physics.velocity = Vector3(
-                            (p1.physics.velocity.x + p2.physics.velocity.x) * 0.5,
-                            (p1.physics.velocity.y + p2.physics.velocity.y) * 0.5,
-                            (p1.physics.velocity.z + p2.physics.velocity.z) * 0.5
-                        )
-
-                        # Inherit Data (Simple mix for now)
-                        child.data = {"desc": f"Born from {p1.id} & {p2.id}"}
+                        child.data = {"desc": f"Born from {p1.id} & {p2.id}", "harmony": res_data['resonance']}
 
                         new_entities.append(child)
 
-                        # Energy Cost for Parents (Conservation Law)
-                        p1.dna.amplitude *= 0.8
-                        p2.dna.amplitude *= 0.8
+                        # Cost
+                        p1.soul.amplitude *= 0.8
+                        p2.soul.amplitude *= 0.8
 
-                        # Mark processed so they don't breed again this tick
                         processed.add(p1.id)
                         processed.add(p2.id)
-                    else:
-                        # Destructive interference (Mutation/Death?)
-                        # Just lose energy
-                        p1.dna.amplitude *= 0.9
-                        p2.dna.amplitude *= 0.9
 
         return new_entities
