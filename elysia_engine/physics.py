@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING, Tuple
 import math
 import random
 
@@ -10,6 +10,60 @@ from .tensor import SoulTensor
 
 if TYPE_CHECKING:
     from .entities import Entity
+
+
+@dataclass
+class HolographicBoundary:
+    """
+    Boundary-only sampler (Holographic Principle).
+    Stores potential values on a surface and interpolates for interior points.
+    """
+    samples: List[Tuple[Vector3, float]] = field(default_factory=list)
+    thickness: float = 0.1
+
+    @staticmethod
+    def spherical_shell(radius: float = 10.0, resolution: int = 6, center: Optional[Vector3] = None, base_potential: float = -1.0) -> 'HolographicBoundary':
+        """
+        Builds a simple spherical shell by sampling longitude/latitude rings.
+        """
+        if center is None:
+            center = Vector3(0, 0, 0)
+
+        samples: List[Tuple[Vector3, float]] = []
+        # Rough grid on the sphere surface
+        for i in range(resolution):
+            theta = (i / resolution) * math.pi  # 0..pi
+            for j in range(resolution * 2):
+                phi = (j / (resolution * 2)) * (2 * math.pi)  # 0..2pi
+                x = radius * math.sin(theta) * math.cos(phi) + center.x
+                y = radius * math.cos(theta) + center.y
+                z = radius * math.sin(theta) * math.sin(phi) + center.z
+                samples.append((Vector3(x, y, z), base_potential))
+        return HolographicBoundary(samples=samples, thickness=0.25)
+
+    def sample(self, point: Vector3) -> Optional[float]:
+        """
+        Returns the interpolated potential from boundary samples.
+        Uses inverse-distance weighting; zero thickness acts as pure shell.
+        """
+        if not self.samples:
+            return None
+
+        weighted = 0.0
+        weight_sum = 0.0
+        for pos, potential in self.samples:
+            dist = (pos - point).magnitude
+            if dist <= self.thickness:
+                return potential
+
+            # Inverse distance weighting to approximate interior field
+            weight = 1.0 / (dist + 1e-6)
+            weighted += weight * potential
+            weight_sum += weight
+
+        if weight_sum == 0:
+            return None
+        return weighted / weight_sum
 
 @dataclass
 class PhysicsState:
@@ -71,6 +125,8 @@ class PhysicsWorld:
         self.entities: List[Entity] = [] # Track all entities to calculate their mutual fields
         self.gravity_constant: float = 1.0
         self.coupling_constant: float = 0.5 # Strength of the Soul Force (Rifling)
+        self.time_scale: float = 1.0
+        self.holographic_boundary: Optional[HolographicBoundary] = None
 
     def add_attractor(self, attractor: Attractor) -> None:
         self.attractors.append(attractor)
@@ -79,6 +135,12 @@ class PhysicsWorld:
         if entity not in self.entities:
             self.entities.append(entity)
 
+    def configure_holographic_boundary(self, boundary: HolographicBoundary) -> None:
+        """
+        Sets a holographic shell to approximate potentials using boundary data only.
+        """
+        self.holographic_boundary = boundary
+
     def calculate_potential(self, position: Vector3, target_soul: Optional[SoulTensor] = None) -> float:
         """
         Calculates the Scalar Potential (Energy Landscape) at a given point.
@@ -86,6 +148,11 @@ class PhysicsWorld:
         V = -G * M / r * (1 + Resonance_Coupling)
         """
         potential = 0.0
+
+        if self.holographic_boundary:
+            holographic_val = self.holographic_boundary.sample(position)
+            if holographic_val is not None:
+                potential += holographic_val
 
         # Target properties (default to generic matter if None)
         t_polarity = target_soul.polarity if target_soul else 1.0

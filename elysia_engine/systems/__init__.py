@@ -17,3 +17,10 @@ class System(ABC):
         Execute the system's logic for the current time step.
         """
         pass
+
+# Optional helper systems
+try:
+    from .spacetime import SpacetimeOrchestrator  # noqa: F401
+except Exception:
+    # Avoid import issues if optional modules are absent during partial loads.
+    pass

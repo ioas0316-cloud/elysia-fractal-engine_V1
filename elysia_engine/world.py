@@ -28,19 +28,24 @@ class World:
         self.systems.append(system)
 
     def step(self, dt: float = 1.0) -> None:
-        self.time += dt
+        # Physics can warp perceived time (Chronos / Spacetime orchestration)
+        physics_dt = dt
+        if self.physics:
+            physics_dt = dt * self.physics.time_scale
+
+        self.time += physics_dt
         self.tick += 1
 
         # Update Entities
         for ent in self.entities.values():
-            ent.step(self, dt=dt)
+            ent.step(self, dt=physics_dt)
             # Automatically apply physics if the world has physics enabled
             if self.physics:
-                ent.apply_physics(coil=None, world_physics=self.physics, dt=dt)
+                ent.apply_physics(coil=None, world_physics=self.physics, dt=physics_dt)
 
         # Update Systems (Global Logic)
         for sys in self.systems:
-            sys.step(self, dt)
+            sys.step(self, physics_dt)
 
     def export_persona_snapshot(self) -> Dict:
         return {
