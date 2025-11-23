@@ -1,5 +1,6 @@
 ﻿from __future__ import annotations
 
+import copy
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, TYPE_CHECKING
 
@@ -48,3 +49,10 @@ class World:
             "entity_count": len(self.entities),
             "entities": [ent.to_payload() for ent in self.entities.values()],
         }
+
+    def clone(self) -> World:
+        """
+        Creates a divergent timeline (Deep Copy).
+        Used for 'Quantum Dreaming' and Prophecy.
+        """
+        return copy.deepcopy(self)
