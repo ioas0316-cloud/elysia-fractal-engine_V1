@@ -14,6 +14,10 @@ class SoulTensor:
     1. Amplitude (Body/Mass): The Magnitude/Intensity of the being. Creates Gravity.
     2. Frequency (Soul/Identity): The Color/Type of the being. Defines the 'Rifling' pitch.
     3. Phase (Spirit/Timing): The Alignment/Rhythm. Defines interaction chemistry.
+    
+    Additional Properties:
+    - Coherence: Quantum coherence (0-1), how "quantum" vs "classical" the state is
+    - Temperature: Derived from frequency, used for thermodynamic calculations
     """
     amplitude: float  # Body: Mass, Energy, Intensity
     frequency: float  # Soul: Emotion, Identity, Vibration Rate
@@ -21,6 +25,7 @@ class SoulTensor:
     spin: float = 1.0 # Rifling: Direction of the spiral (+1 or -1)
     polarity: float = 1.0 # Matter (1.0) vs Antimatter (-1.0)
     is_collapsed: bool = False # Wave Function Collapse State
+    coherence: float = 1.0 # Quantum coherence (1.0 = pure quantum, 0.0 = classical)
 
     # Quantum Properties
     entangled_peers: List['SoulTensor'] = field(default_factory=list, repr=False)
@@ -31,6 +36,8 @@ class SoulTensor:
         Evolve the wave state over time.
         Phase rotates: d(phi)/dt = frequency
         Unless collapsed (Ice Star), where phase is locked.
+        
+        Also applies decoherence over time.
         """
         if self.is_collapsed:
             return
@@ -38,6 +45,11 @@ class SoulTensor:
         delta = self.frequency * dt
         self.phase += delta
         self.phase %= (2 * math.pi)
+        
+        # Decoherence: quantum states slowly become classical
+        # Rate depends on amplitude (more mass = faster decoherence)
+        decoherence_rate = 0.001 * (1 + self.amplitude * 0.01)
+        self.coherence = max(0.0, self.coherence - decoherence_rate * dt)
 
         # Propagate phase change to entangled peers (instant action at a distance)
         # We only push the delta to avoid infinite recursion loops if bidirectional
@@ -223,5 +235,236 @@ class SoulTensor:
             "spin": self.spin,
             "polarity": self.polarity,
             "is_collapsed": self.is_collapsed,
+            "coherence": self.coherence,
+            "temperature": self.temperature,
+            "energy": self.total_energy,
             "emotion": self.decode_emotion()
         }
+
+    # ==================== Energy & Temperature Properties ====================
+
+    @property
+    def temperature(self) -> float:
+        """
+        Calculate temperature from frequency.
+        
+        Temperature represents the internal kinetic energy of the soul.
+        Higher frequency = higher temperature = more active state.
+        
+        Returns:
+            Temperature value (conceptual, not physical units)
+        """
+        # Base temperature from frequency
+        base_temp = self.frequency * 10.0
+        
+        # Collapsed souls have reduced temperature
+        if self.is_collapsed:
+            base_temp *= 0.1
+        
+        # Amplitude adds some heat (more mass = more potential energy)
+        base_temp += self.amplitude * 0.5
+        
+        return max(0.0, base_temp)
+
+    @property
+    def total_energy(self) -> float:
+        """
+        Calculate total energy of the soul.
+        
+        E = amplitude * frequency^2 (analogous to kinetic energy)
+        Plus potential energy from amplitude (mass-energy equivalence)
+        
+        Returns:
+            Total energy value
+        """
+        kinetic = 0.5 * self.amplitude * (self.frequency ** 2) * 0.01
+        potential = self.amplitude * 10.0  # Mass-energy
+        return kinetic + potential
+
+    @property
+    def spiritual_buoyancy(self) -> float:
+        """
+        Calculate spiritual buoyancy (tendency to rise or sink).
+        
+        High frequency = rise (ethereal, light)
+        Low frequency = sink (grounded, heavy)
+        
+        Returns:
+            Buoyancy value (-1 to 1, negative = sinks, positive = rises)
+        """
+        # Frequency determines base buoyancy
+        if self.frequency > 500:
+            base = 1.0  # Transcendent, rising
+        elif self.frequency > 200:
+            base = 0.5  # Elevated
+        elif self.frequency > 100:
+            base = 0.0  # Neutral
+        elif self.frequency > 50:
+            base = -0.3  # Slight gravity
+        else:
+            base = -0.7  # Heavy, sinking
+        
+        # Amplitude affects buoyancy (more mass = harder to rise)
+        mass_factor = 1.0 / (1.0 + self.amplitude * 0.01)
+        
+        # Collapsed souls are heavier
+        if self.is_collapsed:
+            mass_factor *= 0.5
+        
+        return base * mass_factor
+
+    # ==================== State Transition Methods ====================
+
+    def sublime(self) -> None:
+        """
+        Sublimation: Direct transition from solid (collapsed) to gas (plasma).
+        
+        Requires significant energy input.
+        Opposite of crystallization.
+        """
+        if not self.is_collapsed:
+            return
+        
+        # Convert mass to energy (frequency)
+        energy_release = self.amplitude * 0.3
+        self.frequency = energy_release
+        self.amplitude *= 0.7
+        self.is_collapsed = False
+        self.coherence = 0.8  # Partially restore quantum properties
+
+    def crystallize(self) -> None:
+        """
+        Crystallization: Form a permanent, stable structure.
+        
+        Like collapse but more permanent.
+        Represents achieving a final form/truth.
+        """
+        if self.is_collapsed:
+            # Already collapsed, just strengthen
+            self.coherence = 0.0  # Fully classical
+            return
+        
+        # Full collapse with enhanced stability
+        self.collapse()
+        self.coherence = 0.0  # Fully classical (permanent)
+
+    def harmonize(self, target_phase: float, rate: float = 0.1) -> None:
+        """
+        Gradually align phase toward a target.
+        
+        Used for synchronization without full entanglement.
+        
+        Args:
+            target_phase: The phase to align toward
+            rate: How fast to align (0-1)
+        """
+        if self.is_collapsed:
+            return
+        
+        # Calculate shortest path to target phase
+        diff = target_phase - self.phase
+        if diff > math.pi:
+            diff -= 2 * math.pi
+        elif diff < -math.pi:
+            diff += 2 * math.pi
+        
+        # Move toward target
+        self.phase += diff * rate
+        self.phase %= (2 * math.pi)
+
+    def absorb(self, other: 'SoulTensor', ratio: float = 0.5) -> None:
+        """
+        Absorb energy from another soul.
+        
+        The absorber gains amplitude/frequency, donor loses.
+        
+        Args:
+            other: The soul to absorb from
+            ratio: Fraction of energy to transfer (0-1)
+        """
+        # Calculate transfer amounts
+        amp_transfer = other.amplitude * ratio
+        freq_transfer = other.frequency * ratio
+        
+        # Apply transfer
+        self.amplitude += amp_transfer * 0.8  # 80% efficiency
+        self.frequency = (self.frequency + freq_transfer) / 2  # Average
+        
+        # Donor loses energy
+        other.amplitude *= (1 - ratio)
+        other.frequency *= (1 - ratio)
+
+    def split(self) -> Optional['SoulTensor']:
+        """
+        Split the soul into two parts.
+        
+        Creates a new soul with half the energy.
+        Used for replication without a partner.
+        
+        Returns:
+            The new split-off soul, or None if insufficient energy
+        """
+        if self.amplitude < 20:
+            return None  # Not enough energy to split
+        
+        # Create child with half the properties
+        child = SoulTensor(
+            amplitude=self.amplitude * 0.4,
+            frequency=self.frequency,
+            phase=(self.phase + math.pi) % (2 * math.pi),  # Opposite phase
+            spin=self.spin * -1,  # Opposite spin
+            polarity=self.polarity,
+            coherence=self.coherence * 0.5
+        )
+        
+        # Parent loses energy
+        self.amplitude *= 0.6
+        
+        return child
+
+    # ==================== Harmonic Analysis ====================
+
+    def harmonic_distance(self, other: 'SoulTensor') -> float:
+        """
+        Calculate harmonic distance between two souls.
+        
+        Based on frequency ratios (musical harmony).
+        
+        Args:
+            other: Soul to compare with
+            
+        Returns:
+            Distance value (0 = perfect harmony, higher = more dissonant)
+        """
+        if self.frequency <= 0 or other.frequency <= 0:
+            return 1.0
+        
+        # Calculate frequency ratio
+        ratio = max(self.frequency, other.frequency) / min(self.frequency, other.frequency)
+        
+        # Perfect harmonics: 1:1, 2:1, 3:2, 4:3, 5:4
+        perfect_ratios = [1.0, 2.0, 1.5, 1.333, 1.25]
+        
+        # Find closest perfect ratio
+        min_distance = float('inf')
+        for pr in perfect_ratios:
+            dist = abs(ratio - pr) / pr
+            if dist < min_distance:
+                min_distance = dist
+        
+        return min(1.0, min_distance)
+
+    def is_octave(self, other: 'SoulTensor') -> bool:
+        """
+        Check if two souls are in octave relationship.
+        
+        Octaves are 2:1 frequency ratios.
+        """
+        if self.frequency <= 0 or other.frequency <= 0:
+            return False
+        
+        ratio = max(self.frequency, other.frequency) / min(self.frequency, other.frequency)
+        
+        # Check if ratio is close to a power of 2
+        log_ratio = math.log2(ratio)
+        return abs(log_ratio - round(log_ratio)) < 0.1

@@ -24,3 +24,27 @@ try:
 except Exception:
     # Avoid import issues if optional modules are absent during partial loads.
     pass
+
+try:
+    from .thermodynamics import ThermodynamicsSystem, ThermalState  # noqa: F401
+except Exception:
+    pass
+
+try:
+    from .void import VoidSystem  # noqa: F401
+except Exception:
+    pass
+
+try:
+    from .genesis import GenesisSystem  # noqa: F401
+except Exception:
+    pass
+
+try:
+    from .fractal_evolution import (  # noqa: F401
+        FractalEvolutionSystem,
+        DimensionalState,
+        CosmicResonanceField,
+    )
+except Exception:
+    pass
