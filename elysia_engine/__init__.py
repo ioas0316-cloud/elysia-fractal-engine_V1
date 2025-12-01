@@ -13,6 +13,10 @@ from .exceptions import (
 )
 from .logging_config import get_logger, configure_root_logger
 
+# Core Structure from Original Elysia
+from .yggdrasil import Yggdrasil, Realm, YggdrasilNode, get_yggdrasil
+from .ether import Ether, Wave, WavePhase, Frequency, get_ether, emit_wave
+
 __all__ = [
     # Core classes
     "Entity",
@@ -34,4 +38,15 @@ __all__ = [
     # Logging
     "get_logger",
     "configure_root_logger",
+    # Core Structure (from Original Elysia)
+    "Yggdrasil",
+    "Realm",
+    "YggdrasilNode",
+    "get_yggdrasil",
+    "Ether",
+    "Wave",
+    "WavePhase",
+    "Frequency",
+    "get_ether",
+    "emit_wave",
 ]
