@@ -17,8 +17,8 @@ Elysia Engine Evaluation Module
 from __future__ import annotations
 
 import ast
+import json
 import os
-import inspect
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -293,8 +293,8 @@ class QualityEvaluator:
         # 4. 연결성 점수
         result.connectivity_score = self._evaluate_connectivity()
         
-        # 5. 테스트 커버리지 (예상)
-        result.test_coverage_score = 0.85  # 191개 테스트 통과 기준
+        # 5. 테스트 커버리지 (테스트 파일 분석)
+        result.test_coverage_score = self._estimate_test_coverage()
         
         # 6. 전체 점수 계산
         result.overall_score = (
@@ -428,6 +428,47 @@ class QualityEvaluator:
         isolation_score = len(connected_modules) / len(self.modules) * 0.5
         
         return connection_score + isolation_score
+    
+    def _estimate_test_coverage(self) -> float:
+        """테스트 커버리지 추정"""
+        # 테스트 디렉토리에서 테스트 파일 분석
+        test_count = 0
+        tested_modules = set()
+        
+        # 모듈 이름에서 테스트 가능한 이름 추출
+        module_names = set()
+        for name in self.modules.keys():
+            short_name = name.split(".")[-1]
+            module_names.add(short_name)
+        
+        # 테스트 파일 탐색 (상대 경로로 tests/ 디렉토리 찾기)
+        for module_name in self.modules.keys():
+            if "elysia_engine" in module_name or "elysia_core" in module_name:
+                module_path = self.modules[module_name].path
+                # 테스트 디렉토리 추정
+                project_root = os.path.dirname(os.path.dirname(module_path))
+                test_dir = os.path.join(project_root, "tests")
+                
+                if os.path.exists(test_dir):
+                    for test_file in os.listdir(test_dir):
+                        if test_file.startswith("test_") and test_file.endswith(".py"):
+                            test_count += 1
+                            # 테스트 파일 이름에서 모듈 이름 추출
+                            module_tested = test_file[5:-3]  # test_xxx.py -> xxx
+                            if module_tested in module_names:
+                                tested_modules.add(module_tested)
+                break
+        
+        if not self.modules:
+            return 0.0
+        
+        # 테스트된 모듈 비율 계산
+        coverage_ratio = len(tested_modules) / len(module_names) if module_names else 0.0
+        
+        # 테스트 파일 수에 따른 보너스
+        test_bonus = min(test_count / 20.0, 0.3)  # 최대 0.3 보너스
+        
+        return min(coverage_ratio * 0.7 + test_bonus, 1.0)
     
     def _determine_quality_level(self, score: float) -> QualityLevel:
         """품질 수준 결정"""
@@ -754,7 +795,6 @@ def generate_report(root_path: str, output_format: str = "text") -> str:
             result.relationships
         )
     elif output_format == "json":
-        import json
         return json.dumps(visualizer.generate_json_export(result), ensure_ascii=False, indent=2)
     else:
         # 텍스트 보고서

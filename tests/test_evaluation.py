@@ -4,6 +4,7 @@ Elysia Engine Evaluation Module Tests
 이 테스트 모듈은 구조 추출 및 평가 기능을 검증합니다.
 """
 
+import json
 import os
 import pytest
 from pathlib import Path
@@ -239,8 +240,6 @@ class TestIntegration:
         
     def test_generate_report_json(self):
         """JSON 보고서 생성 테스트"""
-        import json
-        
         report = generate_report(str(PROJECT_ROOT), "json")
         
         assert isinstance(report, str)
