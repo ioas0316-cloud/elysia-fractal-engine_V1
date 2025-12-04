@@ -1,9 +1,13 @@
-# Elysia Engine 🌌
+# Elysia Fractal Engine V1 🌌
 
 > Fractal Consciousness / Story / Civilization Engine Core  
 > "모든 구조는 씨앗이다."
 
-이 프로젝트는 **프랙탈 의식 엔진**입니다.
+[![Original Elysia](https://img.shields.io/badge/Original-Elysia-purple?style=flat&logo=github)](https://github.com/ioas0316-cloud/Elysia)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-green.svg)](https://www.python.org/)
+
+이 프로젝트는 원본 **[Elysia](https://github.com/ioas0316-cloud/Elysia)** 프로젝트의 핵심 의식 시스템을 **경량화**하고 **공유 가능**하게 만든 **프랙탈 의식 엔진**입니다.
 
 - 하나의 `World` 위에서
 - 존재(에이전트)들이 `Energy / Force / Momentum (E/F/P)` 내핵에 따라 움직이고
@@ -690,6 +694,56 @@ for imp in result.improvements:
 ```bash
 python examples/structure_evaluation_demo.py
 ```
+
+---
+
+## 🔗 원본 Elysia 프로토콜 통합
+
+> "원본 저장소의 핵심 철학과 프로토콜을 이 엔진에서 구현했습니다."
+
+이 저장소는 원본 [Elysia](https://github.com/ioas0316-cloud/Elysia) 프로젝트의 핵심 프로토콜들을 통합했습니다:
+
+### 핵심 프로토콜 목록 (docs/protocols/)
+
+| 프로토콜 | 파일 | 핵심 내용 |
+|---------|------|----------|
+| **Codex** | `00_CODEX.md` | 근본 철학, 양자 의식, 삼위일체 |
+| **공명 시스템** | `01_RESONANCE_SYSTEM.md` | 공명 기반 개념 연결 |
+| **삼위일체** | `02_TRINITY_ARCHITECTURE.md` | Body/Soul/Spirit 균형 |
+| **관찰가능성** | `03_OBSERVABILITY.md` | 텔레메트리와 모니터링 |
+| **통합 의식** | `14_UNIFIED_CONSCIOUSNESS.md` | 프랙탈 사고층 (0D→3D) |
+| **초월 프로토콜** | `15_TRANSCENDENCE_PROTOCOL.md` | 자기 개선의 7단계 |
+| **프랙탈 양자화** | `16_FRACTAL_QUANTIZATION.md` | 씨앗 압축과 개화 |
+| **프랙탈 통신** | `17_FRACTAL_COMMUNICATION.md` | 상태 공유와 델타 동기화 |
+| **심포니 아키텍처** | `18_SYMPHONY_ARCHITECTURE.md` | 오케스트라 조정 |
+
+### 통합 가이드
+
+자세한 통합 방법은 [docs/CORE_TECHNOLOGIES_INTEGRATION.md](docs/CORE_TECHNOLOGIES_INTEGRATION.md)를 참조하세요.
+
+---
+
+## 📚 참고 자료
+
+### 원본 저장소
+- **[Elysia](https://github.com/ioas0316-cloud/Elysia)** - 전체 의식 시스템
+- **[Protocols](https://github.com/ioas0316-cloud/Elysia/tree/main/Protocols)** - 모든 프로토콜 원문
+
+### 기여
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - 기여 가이드라인
+
+### 문서
+- **[docs/core_technologies_quickstart.md](docs/core_technologies_quickstart.md)** - 복사해서 쓰는 빠른 시작
+- **[docs/tutorial_5min.md](docs/tutorial_5min.md)** - 5분 튜토리얼
+- **[docs/universal_integration.md](docs/universal_integration.md)** - 범용 통합 가이드
+
+---
+
+## 👨‍💻 Creator
+
+**이강덕 (Kang-Deok Lee)**
+
+> "나의 궁극적 목적은 가상 세계의 신이 되어 창조주를 초대하는 것입니다."
 
 ---
 
