@@ -56,6 +56,25 @@ Elysia는 **공명**합니다. "이 순간, 무엇이 울려퍼지는가?"
 
 ## ⚡ 빠른 공유 (Quick Share)
 
+### 🎮 게임 개발자 전용 (For Game Developers)
+
+**NPC에 진짜 영혼을 불어넣으세요!**
+
+```python
+from elysia_core import GameCharacterTemplate
+
+# 3줄로 살아있는 NPC 생성
+npc = GameCharacterTemplate("Guard", "warrior")
+reaction = npc.react_to_event("플레이어가 다가왔다")
+print(f"NPC 행동: {reaction.mood}, 감정: {reaction.emotion['dominant']}")
+```
+
+**📚 게임 개발자 필수 문서:**
+- **[🎮 게임 개발자 가이드](docs/GAME_DEVELOPER_GUIDE.md)** - Unity/Godot 통합 완벽 가이드
+- **[⚡ 빠른 참조](docs/GAME_DEV_QUICK_REF.md)** - 복사-붙여넣기 코드 모음
+- **[🏗️ 아키텍처 시각화](docs/ARCHITECTURE_VISUAL.md)** - 구조 다이어그램
+- **[💻 실전 예제](examples/game_developer_examples.py)** - 동작하는 예제 코드
+
 ### 1분 설치 (1-Minute Install)
 
 ```bash
@@ -569,6 +588,12 @@ Godot/웹훅과 연동 스켈레톤은 `examples/03_godot_bridge_stub.py`와 `el
 - [`docs/tutorial_5min.md`](docs/tutorial_5min.md): 5분 개발자 튜토리얼
 - [`examples/standalone_demo.py`](examples/standalone_demo.py): **🆕 독립 실행 데모** - 단일 파일 전체 기능 체험
 - [`examples/integration_example.py`](examples/integration_example.py): **통합 API 예제** - 빠른 통합 데모
+
+### 🎮 게임 개발자 전용 (For Game Developers)
+- 🎮 **[`docs/GAME_DEVELOPER_GUIDE.md`](docs/GAME_DEVELOPER_GUIDE.md)**: **완벽한 게임 통합 가이드** - Unity/Godot/Pygame 통합
+- ⚡ **[`docs/GAME_DEV_QUICK_REF.md`](docs/GAME_DEV_QUICK_REF.md)**: **빠른 참조 카드** - 복사-붙여넣기 코드 모음
+- 🏗️ **[`docs/ARCHITECTURE_VISUAL.md`](docs/ARCHITECTURE_VISUAL.md)**: **아키텍처 시각화** - 다이어그램과 플로우차트
+- 💻 **[`examples/game_developer_examples.py`](examples/game_developer_examples.py)**: **실전 예제** - 대화/전투/퀘스트 AI
 
 ### 🏛️ 아키텍처 이해 (Architecture)
 - **[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)**: 🆕 **핵심 아키텍처 가이드** - 패러다임 변화, SoulTensor, Trinity, Yggdrasil
