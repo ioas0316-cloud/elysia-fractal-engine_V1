@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Elysia: The Garden of Light</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #0f0;
+            pointer-events: none;
+            text-shadow: 0 0 5px #0f0;
+        }
+
+        .hud-line {
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 24px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="overlay">
+        <div class="hud-line">SYSTEM: HOLOGRAPHIC_CORTEX</div>
+        <div class="hud-line">MODE: GARDEN_PROJECTION</div>
+        <div class="hud-line" id="status">STATUS: AWAITING_WAVE_PACKET...</div>
+        <div class="hud-line" id="photon-count">PHOTONS: 0</div>
+    </div>
+    <div id="loading">CONNECTING TO ELYSIA CORE...</div>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // --- The Vanilla 3D Engine (Genesis) ---
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const statusEl = document.getElementById('status');
+        const photonCountEl = document.getElementById('photon-count');
+        const loadingEl = document.getElementById('loading');
+
+        let width, height;
+        let photons = []; // The particles
+        let angleY = 0;   // Rotation
+
+        // Resize
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Wave Packet Decoder
+        async function fetchWavePacket() {
+            try {
+                const response = await fetch('/manifest_garden');
+                const data = await response.json();
+
+                statusEl.innerText = "STATUS: WAVE_COLLAPSED";
+                loadingEl.style.display = 'none';
+
+                // Decode the packet
+                // Expected format: { "photons": [ {"x":.., "y":.., "z":.., "c": "color"} ... ] }
+                photons = data.photons.map(p => ({
+                    x: p.x,
+                    y: p.y,
+                    z: p.z,
+                    color: p.c || 'white',
+                    size: p.s || 2
+                }));
+
+                // If real data comes with encoded positions, use them.
+                if (data.encoded) {
+                    // Custom decoder logic for Elysia's math if needed
+                    // For now assuming JSON
+                }
+
+                photonCountEl.innerText = `PHOTONS: ${photons.length}`;
+
+            } catch (e) {
+                statusEl.innerText = "STATUS: SIGNAL_LOST (" + e.message + ")";
+                loadingEl.innerText = "SIGNAL LOST. RETRYING...";
+                setTimeout(fetchWavePacket, 2000);
+            }
+        }
+
+        // Camera State
+        let camDist = 800;
+        let angleX = 0;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        // Interaction
+        canvas.addEventListener('mousedown', e => {
+            isDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
+
+        window.addEventListener('mouseup', () => isDragging = false);
+
+        canvas.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            const dx = e.clientX - lastMouseX;
+            const dy = e.clientY - lastMouseY;
+            angleY += dx * 0.01;
+            angleX += dy * 0.01;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
+
+        canvas.addEventListener('wheel', e => {
+            camDist += e.deltaY * 0.5;
+            camDist = Math.max(100, Math.min(camDist, 5000));
+        });
+
+        // Project 3D Point to 2D
+        function project(p) {
+            const fov = 400;
+
+            // Rotation Matrix Y
+            let x = p.x * Math.cos(angleY) - p.z * Math.sin(angleY);
+            let z = p.z * Math.cos(angleY) + p.x * Math.sin(angleY);
+            let y = p.y;
+
+            // Rotation Matrix X (Tilt)
+            let y_new = y * Math.cos(angleX) - z * Math.sin(angleX);
+            let z_new = z * Math.cos(angleX) + y * Math.sin(angleX);
+            y = y_new;
+            z = z_new;
+
+            // Perspective
+            // Camera is at z = -camDist
+            // Point z is relative to center. 
+            // We move everything back by camDist so camera is at 0
+            const depth = z + camDist;
+            if (depth <= 0) return { scale: 0 }; // Behind camera
+
+            const scale = fov / depth;
+            const x2d = x * scale + width / 2;
+            const y2d = y * scale + height / 2;
+
+            return { x: x2d, y: y2d, scale: scale, dist: depth };
+        }
+
+        // Render Loop
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; // Clear with trail
+            ctx.fillRect(0, 0, width, height);
+
+            if (!isDragging) angleY += 0.002; // Slow auto-spin
+
+            // Sort by depth for correct occlusion
+            const projected = [];
+            for (let p of photons) {
+                const proj = project(p);
+                if (proj.scale > 0) {
+                    projected.push({ p: p, proj: proj });
+                }
+            }
+            projected.sort((a, b) => b.proj.dist - a.proj.dist);
+
+            // Draw
+            for (let item of projected) {
+                const { p, proj } = item;
+                ctx.beginPath();
+                ctx.arc(proj.x, proj.y, p.size * proj.scale, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = Math.min(1, proj.scale * 1.5); // Fade distant
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1.0;
+
+            requestAnimationFrame(animate);
+        }
+
+        // Start
+        fetchWavePacket();
+        animate();
+
+    </script>
+</body>
+
+</html>

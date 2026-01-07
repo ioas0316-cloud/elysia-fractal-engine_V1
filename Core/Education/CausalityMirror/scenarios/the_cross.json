@@ -1,0 +1,51 @@
+{
+    "title": "The Silent Refusal",
+    "version": "1.0",
+    "zeitgeist": {
+        "name": "The Iron Age of Empire",
+        "inertia": 0.9,
+        "desire": 0.2,
+        "sophistication": 0.8,
+        "frequency": 10.0
+    },
+    "roles": [
+        "Citizen"
+    ],
+    "nodes": {
+        "root": {
+            "context": {
+                "Citizen": "The Emperor decrees: 'Bow to the Statue of Gold, or be thrown into the furnace.'"
+            },
+            "choices": [
+                {
+                    "id": "SUBMIT",
+                    "text": "Bow down. (Survive)",
+                    "role": "Citizen",
+                    "intent": {
+                        "w": 0.1,
+                        "x": 0.2,
+                        "y": 1.0,
+                        "z": -0.5
+                    },
+                    "innovation": -0.5,
+                    "risk": 0.0,
+                    "empathy": -0.2
+                },
+                {
+                    "id": "REFUSE",
+                    "text": "Stand tall and refuse. (Death)",
+                    "role": "Citizen",
+                    "intent": {
+                        "w": 1.0,
+                        "x": -1.0,
+                        "y": -1.0,
+                        "z": 1.0
+                    },
+                    "innovation": 1.0,
+                    "risk": 1.0,
+                    "empathy": 1.0
+                }
+            ]
+        }
+    }
+}

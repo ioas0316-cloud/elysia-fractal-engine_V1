@@ -1,0 +1,39 @@
+{
+  "decision": "Recommend starting with async basics and providing practical examples",
+  "type": "step_by_step",
+  "level": "detailed",
+  "reasoning_steps": [
+    {
+      "step": 1,
+      "description": "Identified learning need",
+      "confidence": 0.85,
+      "alternatives": [
+        "documentation link"
+      ]
+    }
+  ],
+  "visual": "Decision Flow:\n\n[Step 1] Identified learning need\n  Confidence: 0.85\n",
+  "key_factors": [
+    {
+      "factor": "Identified learning need",
+      "importance": 0.85,
+      "evidence": [
+        "intent",
+        "confusion"
+      ]
+    }
+  ],
+  "assumptions": [
+    "Input data is accurate and complete",
+    "Context remains stable during execution",
+    "Historical patterns are relevant to current situation"
+  ],
+  "limitations": [
+    "Limited alternatives were considered",
+    "Decision based on available data at time of analysis",
+    "May not account for all edge cases",
+    "Effectiveness depends on context stability"
+  ],
+  "confidence": 0.85,
+  "timestamp": 1764836596.0512996
+}

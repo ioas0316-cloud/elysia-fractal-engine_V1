@@ -1,0 +1,31 @@
+{
+  "modules": {
+    "ReasoningEngine": {
+      "path": "Core/Intelligence/reasoning_engine.py",
+      "capabilities": [
+        "decision",
+        "ethics",
+        "planning",
+        "reasoning"
+      ],
+      "description": "The Soul - makes decisions based on desire and conscience",
+      "total_fires": 0
+    },
+    "CognitiveHub": {
+      "path": "Core/Cognition/cognitive_hub.py",
+      "capabilities": [
+        "understanding",
+        "analysis",
+        "learning",
+        "why"
+      ],
+      "description": "The Mind - integrates cognitive systems",
+      "total_fires": 0
+    }
+  },
+  "relational_density": {
+    "CognitiveHub:ReasoningEngine": 0.1,
+    "ReasoningEngine:CognitiveHub": 0.1
+  },
+  "saved_at": 1766141043.759161
+}

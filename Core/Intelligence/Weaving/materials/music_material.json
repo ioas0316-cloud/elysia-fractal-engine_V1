@@ -1,0 +1,13 @@
+{
+    "keywords": [
+        "melody", "rhythm", "beat", "chord", "harmony", "note",
+        "tempo", "song", "sing", "instrument", "piano", "guitar",
+        "bass", "drum", "symphony", "jazz", "rock", "classical"
+    ],
+    "patterns": {
+        "out of tune": 0.8,
+        "beautiful harmony": 1.0,
+        "fast tempo": 0.6,
+        "slow ballad": 0.6
+    }
+}

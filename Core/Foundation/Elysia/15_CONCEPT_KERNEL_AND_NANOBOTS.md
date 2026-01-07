@@ -1,0 +1,5 @@
+﻿# Moved
+
+See: ELYSIA/CORE/protocols/CONCEPT_KERNEL_AND_NANOBOTS.md
+
+

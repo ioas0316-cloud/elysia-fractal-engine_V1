@@ -1,0 +1,12 @@
+{
+    "keywords": [
+        "number", "equation", "logic", "proof", "variable", "function",
+        "geometry", "calculus", "ratio", "pattern", "symmetry",
+        "frequency", "beat", "sequence", "infinite", "dimension", "time"
+    ],
+    "patterns": {
+        "mathematical proof": 1.0,
+        "golden ratio": 0.9,
+        "fibonacci sequence": 0.8
+    }
+}

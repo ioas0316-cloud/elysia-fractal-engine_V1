@@ -1,0 +1,60 @@
+extends Node3D
+
+var time: float = 0.0
+var portrait: Sprite3D
+
+@export var texture_path: String = "res://assets/icons/Elysia_fullbody.jpg"
+
+
+func _ready() -> void:
+	# ì¹´ë©”??	if not has_node("Camera3D"):
+		var cam := Camera3D.new()
+		cam.name = "Camera3D"
+		cam.position = Vector3(0.0, 0.0, 2.6)
+		cam.look_at(Vector3.ZERO, Vector3.UP)
+		cam.current = true
+		add_child(cam)
+
+	# ê¸°ë³¸ ì¡°ëª…
+	if not has_node("Light"):
+		var light := DirectionalLight3D.new()
+		light.name = "Light"
+		light.position = Vector3(0.0, 2.0, 2.0)
+		light.rotation_degrees = Vector3(-45.0, 0.0, 0.0)
+		add_child(light)
+
+	# ì´ˆìƒ ?¨ë„ (Sprite3D)
+	portrait = Sprite3D.new()
+	portrait.name = "ElysiaPortrait"
+
+	var tex := load(texture_path)
+	if tex is Texture2D:
+		portrait.texture = tex
+
+	# ?½ì? ?¬ê¸° ì¤„ì—¬???ë‹¹???”ë©´ ?¬ê¸°ë¡?	portrait.pixel_size = 0.002
+	portrait.position = Vector3(0.0, 0.0, 0.0)
+	add_child(portrait)
+
+
+func _process(delta: float) -> void:
+	time += delta
+
+	if portrait:
+		# ?´ì§ ?¥ì‹¤?¥ì‹¤ + ?¨ì‰¬???ë‚Œ
+		var breathe := sin(time * 1.5) * 0.05 + 1.0
+		portrait.scale = Vector3(breathe, breathe, 1.0)
+		portrait.position.y = sin(time * 1.1) * 0.05
+
+	# ?¤íŽ˜?´ìŠ¤/?”í„° ???´ì§ ê³ ê°œ ê¸°ìš¸?´ë©´??ë°˜ì§
+	if Input.is_action_just_pressed("ui_accept") or Input.is_key_pressed(KEY_SPACE):
+		_react_bright()
+
+
+func _react_bright() -> void:
+	if not portrait:
+		return
+
+	portrait.scale = Vector3(1.05, 1.05, 1.0)
+	portrait.rotation_degrees.z = -3.0
+	portrait.modulate = Color(1.1, 1.05, 1.2, 1.0)
+

@@ -1,0 +1,18 @@
+﻿# Genesis Request Object (GRO) template
+# Save entries into: ELYSIA/GROWTH/GENESIS_REQUESTS.log (YAML per line or block)
+
+type: concept # concept | system | world
+name: "<Name>"
+purpose: "<Why this must exist for growth/care/love>"
+level: 0 # 0 | 1 | 2 | 3
+why: "<Narrative of purpose>"
+how_hint: "<Mechanism hints if any>"
+constraints:
+  - "Must not override free will"
+  - "Must be observable via QOE"
+success_criteria:
+  - "<Concrete effect to observe>"
+risk_notes:
+  - "<What could go wrong>"
+requester: "Elysia"
+timestamp: "<UTC ISO8601>"

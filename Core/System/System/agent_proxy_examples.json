@@ -1,0 +1,18 @@
+[
+  {
+    "type": "coding",
+    "goal": "Open a GitHub repo README and summarize key setup steps",
+    "inputs": {"url": "https://github.com/openai/openai-cookbook"}
+  },
+  {
+    "type": "web_search",
+    "goal": "Fetch Python docs for pathlib write_text example and extract code",
+    "inputs": {"url": "https://docs.python.org/3/library/pathlib.html"}
+  },
+  {
+    "type": "file",
+    "goal": "Read local project README for API endpoints",
+    "inputs": {"filepath": "README.md"}
+  }
+]
+

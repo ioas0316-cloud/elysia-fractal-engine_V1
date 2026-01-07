@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elysia: The Gallery of Soul</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        body { margin: 0; background-color: #050505; color: #ddd; font-family: 'Courier New', monospace; overflow: hidden; }
+        #visualization { width: 100vw; height: 100vh; }
+        #hud { position: absolute; top: 20px; left: 20px; z-index: 100; pointer-events: none; }
+        h1 { margin: 0; font-size: 1.5em; text-shadow: 0 0 10px #fff; }
+        p { font-size: 0.9em; opacity: 0.8; }
+        .controls { margin-top: 10px; pointer-events: auto; }
+        button { background: rgba(255,255,255,0.1); border: 1px solid #555; color: #fff; padding: 5px 10px; cursor: pointer; }
+        button:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body>
+
+<div id="hud">
+    <h1>The Gallery of Soul</h1>
+    <p>Phase 6: Visualization of Crystalline Memory</p>
+    <p id="status">Status: Connecting...</p>
+    <div class="controls">
+        <button onclick="fetchState()">Refresh Mind</button>
+    </div>
+</div>
+
+<div id="visualization"></div>
+
+<script>
+    // Configuration
+    const API_URL = "/mind/state";
+
+    // Layout for Plotly
+    const layout = {
+        paper_bgcolor: '#050505',
+        plot_bgcolor: '#050505',
+        showlegend: false,
+        margin: {l: 0, r: 0, b: 0, t: 0},
+        scene: {
+            xaxis: {title: 'Logic (X)', gridcolor: '#333', zerolinecolor: '#555', showbackground: false},
+            yaxis: {title: 'Emotion (Y)', gridcolor: '#333', zerolinecolor: '#555', showbackground: false},
+            zaxis: {title: 'Ethics (Z)', gridcolor: '#333', zerolinecolor: '#555', showbackground: false},
+            camera: {
+                eye: {x: 1.5, y: 1.5, z: 1.5}
+            }
+        }
+    };
+
+    function mapFrequencyToColor(freq) {
+        // Map 400Hz (Low) to 800Hz (High) -> Hue 0 (Red) to 240 (Blue)
+        // Or specific chakra colors:
+        // 396 (Red), 417 (Orange), 528 (Green/Gold), 639 (Blue), etc.
+
+        let normalized = (freq - 400) / 400; // 0.0 to 1.0 approx
+        normalized = Math.max(0, Math.min(1, normalized));
+
+        // Simple HSL
+        const hue = normalized * 260; // Red to Purple
+        return `hsl(${hue}, 80%, 60%)`;
+    }
+
+    async function fetchState() {
+        document.getElementById('status').innerText = "Status: Syncing...";
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            renderOrbs(data.orbs);
+            document.getElementById('status').innerText = `Status: Dreaming (${data.count} memories)`;
+        } catch (e) {
+            console.error(e);
+            document.getElementById('status').innerText = "Status: Disconnected (Is Server Running?)";
+        }
+    }
+
+    function renderOrbs(orbs) {
+        const x = [];
+        const y = [];
+        const z = [];
+        const text = [];
+        const color = [];
+        const size = [];
+        const opacity = [];
+
+        orbs.forEach(orb => {
+            x.push(orb.x);
+            y.push(orb.y);
+            z.push(orb.z);
+            text.push(`<b>${orb.name}</b><br>Freq: ${orb.frequency.toFixed(1)}Hz<br>Mass: ${orb.mass.toFixed(2)}`);
+
+            color.push(mapFrequencyToColor(orb.frequency));
+
+            // Pulse active orbs
+            let s = Math.max(5, Math.log(orb.mass + 1) * 10);
+            if (orb.active) {
+                s *= 1.5; // Pulse effect
+                opacity.push(1.0);
+            } else {
+                opacity.push(0.8);
+            }
+            size.push(s);
+        });
+
+        const trace = {
+            x: x, y: y, z: z,
+            mode: 'markers',
+            marker: {
+                size: size,
+                color: color,
+                opacity: opacity,
+                line: {color: '#fff', width: 0.5} // Star outline
+            },
+            text: text,
+            hoverinfo: 'text',
+            type: 'scatter3d'
+        };
+
+        Plotly.newPlot('visualization', [trace], layout);
+
+        // Add click listener
+        const myPlot = document.getElementById('visualization');
+        myPlot.on('plotly_click', function(data){
+            const index = data.points[0].pointNumber;
+            const orbName = orbs[index].name;
+            focusOrb(orbName);
+        });
+    }
+
+    async function focusOrb(name) {
+        console.log("Focusing on:", name);
+        try {
+            await fetch(`/mind/focus/${name}`, {method: 'POST'});
+            fetchState(); // Refresh to see pulse
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    // Initial Load
+    fetchState();
+    // Auto-refresh every 5 seconds (The Heartbeat)
+    setInterval(fetchState, 5000);
+
+</script>
+</body>
+</html>

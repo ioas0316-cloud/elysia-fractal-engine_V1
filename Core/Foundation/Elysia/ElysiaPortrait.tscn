@@ -1,0 +1,27 @@
+[gd_scene load_steps=12 format=3 uid="uid://bk8yeh4dy0h56"]
+
+[ext_resource type="Script" uid="uid://ctaxvu7vl83s2" path="res://elysia_portrait.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://c1b035c5s7swn" path="res://assets/icons/Elysia_평소.png" id="2_l1xbc"]
+[ext_resource type="Texture2D" uid="uid://kjmy67laax5" path="res://assets/icons/Elysia_기쁨.png" id="3_0d5kk"]
+[ext_resource type="Texture2D" uid="uid://dlbte66knesmd" path="res://assets/icons/Elysia_슬픔.png" id="4_tlxya"]
+[ext_resource type="Texture2D" uid="uid://cnnekhugh47df" path="res://assets/icons/Elysia_삐짐.png" id="5_0brbg"]
+[ext_resource type="Texture2D" uid="uid://cq0jvf02n6axn" path="res://assets/icons/Elysia_걱정.png" id="6_56onh"]
+[ext_resource type="Texture2D" uid="uid://mjs3rdaiusak" path="res://assets/icons/Elysia_행복.png" id="7_mt327"]
+[ext_resource type="Texture2D" uid="uid://brqdnbtas0erp" path="res://assets/icons/Elysia_안도.png" id="8_kxkup"]
+[ext_resource type="Texture2D" uid="uid://c4dvnu1namht3" path="res://assets/icons/Elysia_울적.png" id="9_anudu"]
+[ext_resource type="Texture2D" uid="uid://b3r2ct0p71lsu" path="res://assets/icons/Elysia_분노.png" id="10_4u2qa"]
+[ext_resource type="Texture2D" uid="uid://bi3hmiufoqaui" path="res://assets/icons/Elysia_놀람.png" id="11_kp4qg"]
+
+[node name="ElysiaPortraitRoot" type="Node3D"]
+script = ExtResource("1")
+tex_neutral = ExtResource("2_l1xbc")
+tex_joy = ExtResource("3_0d5kk")
+tex_sad = ExtResource("4_tlxya")
+tex_pout = ExtResource("5_0brbg")
+tex_worry = ExtResource("6_56onh")
+tex_happy = ExtResource("7_mt327")
+tex_relief = ExtResource("8_kxkup")
+tex_curious = ExtResource("6_56onh")
+tex_blue = ExtResource("9_anudu")
+tex_angry = ExtResource("10_4u2qa")
+tex_surprised = ExtResource("11_kp4qg")

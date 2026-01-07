@@ -1,0 +1,5 @@
+{
+  "name": "Godot AI Architect",
+  "description": "A VS Code-styled AI assistant specialized in Godot Engine and GDScript development using Gemini 2.5 Flash.",
+  "requestFramePermissions": []
+}

@@ -1,0 +1,69 @@
+{
+    "title": "The Starving Winter",
+    "version": "1.0",
+    "zeitgeist": {
+        "name": "The Age of Survival",
+        "inertia": 0.8,
+        "desire": -0.5,
+        "sophistication": 0.1,
+        "frequency": 5.0
+    },
+    "roles": [
+        "Chieftain",
+        "Mother",
+        "Hunter"
+    ],
+    "nodes": {
+        "root": {
+            "context": {
+                "Chieftain": "The blizzard has lasted 30 days. The elders say the spirits are angry.",
+                "Mother": "The granary is empty. Your child cries, but her tears freeze.",
+                "Hunter": "No tracks in the snow. The wolves act strange, desperate."
+            },
+            "choices": [
+                {
+                    "id": "A_SACRIFICE",
+                    "text": "Perform the Great Sacrifice (Kill the weakest)",
+                    "role": "Chieftain",
+                    "intent": {
+                        "w": -0.8,
+                        "x": -0.9,
+                        "y": 0.2,
+                        "z": -1.0
+                    },
+                    "innovation": -0.5,
+                    "risk": 0.2,
+                    "empathy": -1.0
+                },
+                {
+                    "id": "A_EXODUS",
+                    "text": "Lead the tribe into the blizzard to find the Warm Lands",
+                    "role": "Chieftain",
+                    "intent": {
+                        "w": 0.5,
+                        "x": 0.5,
+                        "y": -0.8,
+                        "z": 0.5
+                    },
+                    "innovation": 0.9,
+                    "risk": 1.0,
+                    "empathy": 0.3
+                },
+                {
+                    "id": "B_SHARE",
+                    "text": "Share the last hidden scrap of meat with the neighbor's orphan",
+                    "role": "Mother",
+                    "intent": {
+                        "w": -0.1,
+                        "x": 0.8,
+                        "y": -0.5,
+                        "z": 0.9
+                    },
+                    "innovation": 0.2,
+                    "risk": 0.8,
+                    "empathy": 1.0
+                }
+            ]
+        }
+    }
+}

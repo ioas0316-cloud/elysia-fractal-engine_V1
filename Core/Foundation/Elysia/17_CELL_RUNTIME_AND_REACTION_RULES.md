@@ -1,0 +1,5 @@
+﻿# Moved
+
+See: ELYSIA/CORE/protocols/CELL_RUNTIME_AND_REACTION_RULES.md
+
+

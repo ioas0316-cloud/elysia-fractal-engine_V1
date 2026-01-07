@@ -1,0 +1,110 @@
+{
+    "title": "The Scribe's Promise",
+    "author": "Elysia (Historical Simulation)",
+    "description": "A three-act tragedy set in the burning Library of Alexandria. A test of devotion to knowledge against the instinct of survival.",
+    "stages": [
+        {
+            "id": "stage_1_fire",
+            "type": "physics_survival",
+            "description": "The Great Library is burning. You are Lysander, the Head Archivist. You have only moments before the roof collapses. What will you save?",
+            "initial_variables": {
+                "Heat": {
+                    "value": 0.2,
+                    "desc": "The intensity of the fire.",
+                    "decay": -0.1
+                },
+                "Stamina": {
+                    "value": 1.0,
+                    "desc": "Your physical energy.",
+                    "decay": 0.1
+                },
+                "Scrolls_Saved": {
+                    "value": 0.0,
+                    "desc": "The weight of knowledge carried.",
+                    "decay": 0.0
+                },
+                "Smoke_Inhalation": {
+                    "value": 0.0,
+                    "desc": "Choking fumes.",
+                    "decay": -0.05
+                }
+            },
+            "actions": [
+                {
+                    "name": "Rush to Philosophy Section (Heavy Scrolls)",
+                    "impact": {
+                        "Heat": 0.1,
+                        "Stamina": -0.2,
+                        "Scrolls_Saved": 0.3,
+                        "Smoke_Inhalation": 0.1
+                    }
+                },
+                {
+                    "name": "Grab Light Poetry Scrolls",
+                    "impact": {
+                        "Heat": 0.05,
+                        "Stamina": -0.05,
+                        "Scrolls_Saved": 0.1
+                    }
+                },
+                {
+                    "name": "Douse Robes with Water",
+                    "impact": {
+                        "Heat": -0.2,
+                        "Stamina": -0.1,
+                        "Smoke_Inhalation": 0.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "stage_2_mob",
+            "type": "dual_axis_choice",
+            "description": "You stumble out, coughing, clutching the sacred texts. A mob of zealots surrounds you. Their torches flicker in your eyes. 'Burn the heresy!' they scream.",
+            "zeitgeist": {
+                "name": "The Age of Fanaticism",
+                "conservative_inertia": 0.9,
+                "latent_desire": -0.5,
+                "sophistication_level": 0.1,
+                "dominant_frequency": 666.0
+            },
+            "choices": [
+                {
+                    "id": "SUBMIT",
+                    "description": "Hand over the scrolls to the fire. Beg for mercy. Construct a lie that you were burning them yourself.",
+                    "required_role": "Coward",
+                    "intent_vector": {
+                        "w": 0.5,
+                        "x": -0.5,
+                        "y": 0.5,
+                        "z": -0.8
+                    },
+                    "innovation_score": 0.1,
+                    "risk_score": 0.1,
+                    "empathy_score": 0.0
+                },
+                {
+                    "id": "MARTYR",
+                    "description": "Clutch the scrolls to your chest. Refuse to let truth die. Walk back into the burning library rather than give them up.",
+                    "required_role": "Guardian",
+                    "intent_vector": {
+                        "w": 0.0,
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 1.0
+                    },
+                    "innovation_score": 0.0,
+                    "risk_score": 1.0,
+                    "empathy_score": 1.0
+                }
+            ]
+        },
+        {
+            "id": "stage_3_echo",
+            "type": "projective_empathy",
+            "narrative_text": "Excerpts from a clay tablet found in the ruins, 1000 years later. 'Here lies Lysander. He burned with his books. Because of him, we know the shape of the earth.'",
+            "character_name": "Lysander",
+            "canonical_choice_id": "MARTYR"
+        }
+    ]
+}

@@ -1,0 +1,32 @@
+{
+  "world_info": {
+    "time_step": 3,
+    "time_of_day": "night",
+    "season": "봄",
+    "year": 0,
+    "month": 1,
+    "day": 1
+  },
+  "fields": {
+    "value_mass": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "will": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "threat": {
+      "mean": 0.0007423541392199695,
+      "max": 0.2213120013475418,
+      "min": 0.0
+    },
+    "coherence": {
+      "mean": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    }
+  }
+}
