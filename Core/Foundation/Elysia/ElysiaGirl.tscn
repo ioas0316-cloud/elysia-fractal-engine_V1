@@ -1,7 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://c3x0elysiagirl123"]
-
-[ext_resource type="Script" uid="uid://bi5chpktpqdx1" path="res://node_3d.gd" id="1"]
-
-[node name="ElysiaGirlRoot" type="Node3D"]
-script = ExtResource("1")
-

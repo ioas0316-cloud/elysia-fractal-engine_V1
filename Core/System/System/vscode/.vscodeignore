@@ -1,5 +1,0 @@
-out/test
-node_modules
-.git
-**/*.map
-**/*.ts
