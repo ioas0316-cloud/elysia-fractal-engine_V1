@@ -38,6 +38,7 @@ class TesseractCoord:
     """
     The Tesseract-Soul Coordinate System.
     Maps philosophical attributes directly to 4D Cartesian axes.
+    This represents the WORLD POSITION (Where you are).
     """
     w: float  # Dimensional Fault (Scale: Self vs External)
     z: float  # Vector of Intent (Directionality)
@@ -47,9 +48,9 @@ class TesseractCoord:
     def to_quaternion(self) -> Quaternion:
         """
         Direct mapping to Quaternion for physics compatibility.
+        NOTE: This is used for Position-as-Quaternion mapping if needed,
+        but primarily TesseractCoord is a VECTOR concept.
         """
-        # Normalizing to avoid physics explosions if values are large
-        # But conceptually, w,x,y,z ARE the quaternion components.
         return Quaternion(self.w, self.x, self.y, self.z)
 
     def distance_to(self, other: Union['HypersphericalCoord', 'TesseractCoord']) -> float:
@@ -66,10 +67,14 @@ class HypersphericalCoord:
     """
     4D Hyperspherical Coordinates.
 
+    [Decoupling Logic]
+    This coordinate system now represents the SOUL ORIENTATION (Where you are facing/feeling).
+    It generates the internal rotation (Attitude) of the SoulTensor.
+
     Attributes:
-        theta1 (Logic): 0 to 2pi. Analytical vs Intuitive.
-        theta2 (Emotion): 0 to 2pi. Negative vs Positive.
-        theta3 (Intent): 0 to 2pi. Passive vs Active.
+        theta1 (Logic): 0 to 2pi. Analytical vs Intuitive. Rotates Head.
+        theta2 (Emotion): 0 to 2pi. Negative vs Positive. Rotates Heart.
+        theta3 (Intent): 0 to 2pi. Passive vs Active. Rotates Will.
         r (Depth): 0 to 1. Core Truth vs Surface Fact.
     """
 
@@ -80,13 +85,12 @@ class HypersphericalCoord:
 
     def to_quaternion(self) -> Quaternion:
         """
-        Convert to Quaternion (w, x, y, z).
+        Convert to Quaternion (w, x, y, z) representing ROTATION/ORIENTATION.
 
         Mapping Hyperspherical (r, t1, t2, t3) to Quaternion Space:
-        w = r * cos(t3)
-        z = r * sin(t3) * cos(t2)
-        y = r * sin(t3) * sin(t2) * cos(t1)
-        x = r * sin(t3) * sin(t2) * sin(t1)
+        The angles define the 'Shape of Consciousness'.
+
+        If r=1, this produces a unit quaternion suitable for rotation.
         """
         sin_t1 = math.sin(self.theta1)
         cos_t1 = math.cos(self.theta1)
@@ -94,12 +98,6 @@ class HypersphericalCoord:
         cos_t2 = math.cos(self.theta2)
         sin_t3 = math.sin(self.theta3)
         cos_t3 = math.cos(self.theta3)
-
-        # Standard Hyperspherical to 4D Cartesian mapping
-        # x1 = r * cos(phi1)
-        # x2 = r * sin(phi1) * cos(phi2)
-        # x3 = r * sin(phi1) * sin(phi2) * cos(phi3)
-        # x4 = r * sin(phi1) * sin(phi2) * sin(phi3)
 
         # Mapping to Quaternion (w, x, y, z)
         # Let t3 be the primary angle from w-axis

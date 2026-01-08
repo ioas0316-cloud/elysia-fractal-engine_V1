@@ -244,9 +244,10 @@ class PhysicsWorld:
 
     def get_geodesic_flow(self, target_entity: Entity) -> Vector3:
         """
-        Calculates the movement vector based on the Gradient of the Potential Field.
-        Entities 'slide' down the curvature of space.
-        Flow = -Gradient(Potential)
+        Calculates the movement vector based on:
+        1. Gravity (Gradient of Potential) - The World pulling you.
+        2. Rifling (Spin Force) - The Magnetic field.
+        3. Intent (Soul Orientation) - The Soul pushing you.
         """
         pos = target_entity.physics.position
         epsilon = 0.1
@@ -300,11 +301,30 @@ class PhysicsWorld:
 
             spin_force = spin_force + (tangent * spin_mag)
 
+        # --- ADDING INTENT (VOLITION) ---
+        # "The Soul moves differently than the World"
+        # If the soul has a specific orientation, it generates a 'Thrust' or 'Will' force.
+        intent_force = Vector3(0,0,0)
+        if soul and not soul.is_collapsed:
+            # Assume Forward is +Z in local space.
+            # Rotate (0,0,1) by Soul Orientation
+            forward_ref = Vector3(0, 0, 1)
+            intent_direction = soul.orientation.rotate(forward_ref)
+
+            # Magnitude of intent depends on Amplitude (Willpower/Energy)
+            # F_intent = Amplitude * 0.1 (Arbitrary scaling)
+            intent_mag = soul.amplitude * 0.1
+            intent_force = intent_direction * intent_mag
+
+        # Combine Forces
+        # Net Force = Gravity + Spin + Intent
+        total_force = flow + spin_force + intent_force
+
         # --- QUANTUM TUNNELING CHECK ---
         # If the entity faces a high potential barrier (Hill) but has high energy (Frequency),
         # it might tunnel through.
         # Check if flow is opposing velocity (braking)
-        dot_prod = flow.dot(target_entity.physics.velocity)
+        dot_prod = total_force.dot(target_entity.physics.velocity)
         if dot_prod < -0.1 and target_entity.soul and not target_entity.soul.is_collapsed:
             # We are hitting a wall.
             barrier_height = self.calculate_potential(pos + target_entity.physics.velocity.normalize(), target_entity.soul)
@@ -331,7 +351,7 @@ class PhysicsWorld:
                     # For now just modify flow to be zero (teleported past the force)
                     return Vector3(0,0,0)
 
-        return flow + spin_force
+        return total_force
 
     def check_dimensional_binding(self, entity: Entity) -> None:
         """

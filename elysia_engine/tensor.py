@@ -4,6 +4,8 @@ import math
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
+from elysia_engine.math_utils import Quaternion
+
 
 @dataclass
 class SoulTensor:
@@ -16,6 +18,10 @@ class SoulTensor:
         2. Frequency (Soul/Identity): The Color/Type of the being. Defines the 'Rifling' pitch.
         3. Phase (Spirit/Timing): The Alignment/Rhythm. Defines interaction chemistry.
     
+    New Axis (Hypersphere Decoupling):
+        4. Orientation (Hypersphere): The 'Attitude' or 'Facing' of the soul.
+           Determines the Intent Vector (Volition) separate from Position.
+
     Additional Properties:
         - Coherence: Quantum coherence (0-1), how "quantum" vs "classical" the state is
         - Temperature: Derived from frequency, used for thermodynamic calculations
@@ -26,6 +32,7 @@ class SoulTensor:
         phase: Spirit/Timing - Phase angle in radians (0 to 2π)
         spin: Direction of spiral (+1 or -1)
         polarity: Matter (1.0) vs Antimatter (-1.0)
+        orientation: The facing direction of the soul (Quaternion)
         is_collapsed: Wave function collapse state
         coherence: Quantum coherence (1.0 = pure quantum, 0.0 = classical)
     """
@@ -35,6 +42,7 @@ class SoulTensor:
     phase: float      # Spirit: Timing, Perspective (0 to 2pi)
     spin: float = 1.0 # Rifling: Direction of the spiral (+1 or -1)
     polarity: float = 1.0 # Matter (1.0) vs Antimatter (-1.0)
+    orientation: Quaternion = field(default_factory=Quaternion.identity) # Hypersphere Orientation
     is_collapsed: bool = False # Wave Function Collapse State
     coherence: float = 1.0 # Quantum coherence (1.0 = pure quantum, 0.0 = classical)
 
@@ -120,6 +128,7 @@ class SoulTensor:
             self.phase = best_state.phase
             self.spin = best_state.spin
             self.polarity = best_state.polarity
+            self.orientation = best_state.orientation
 
             # The state is now definite
             self.is_collapsed = True
@@ -260,6 +269,7 @@ class SoulTensor:
             "phase": self.phase,
             "spin": self.spin,
             "polarity": self.polarity,
+            "orientation": str(self.orientation),
             "is_collapsed": self.is_collapsed,
             "coherence": self.coherence,
             "temperature": self.temperature,
@@ -449,6 +459,7 @@ class SoulTensor:
             phase=(self.phase + math.pi) % (2 * math.pi),  # Opposite phase
             spin=self.spin * -1,  # Opposite spin (conservation)
             polarity=self.polarity,
+            orientation=self.orientation, # Inherit orientation
             coherence=self.coherence * CHILD_COHERENCE_RATIO
         )
         
