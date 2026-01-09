@@ -62,6 +62,8 @@ def run_perception_test():
     print(f"   [Hearing] Resonance: {senses_1.auditory_resonance:.2f}")
     print(f"   [Touch] Pressure: {senses_1.haptic_pressure:.2f}")
     print(f"   [Balance] Vertigo: {senses_1.vestibular_balance:.2f}")
+    print(f"   [Smell] Essence: {senses_1.olfactory_essence:.2f}")
+    print(f"   [Taste] Chemistry: {senses_1.gustatory_chemistry:.2f}")
     print(f"   [Narrative] \"{senses_1.narrative}\"")
 
     if senses_1.auditory_resonance > 0.9:
@@ -80,12 +82,17 @@ def run_perception_test():
     print(f"   [Hearing] Resonance: {senses_2.auditory_resonance:.2f}")
     print(f"   [Touch] Pressure: {senses_2.haptic_pressure:.2f}")
     print(f"   [Balance] Vertigo: {senses_2.vestibular_balance:.2f}")
+    print(f"   [Smell] Essence: {senses_2.olfactory_essence:.2f}")
+    print(f"   [Taste] Chemistry: {senses_2.gustatory_chemistry:.2f}")
     print(f"   [Narrative] \"{senses_2.narrative}\"")
 
     if senses_2.haptic_pressure > 5.0 and senses_2.vestibular_balance > 0.1:
         print("   ✅ SUCCESS: Heavy Pressure and Vertigo detected.")
     else:
         print("   ❌ FAILURE: Storm not feeling heavy/spinning enough.")
+
+    if senses_2.gustatory_chemistry < 1.0 and senses_2.haptic_pressure > 5.0:
+         print("   ✅ SUCCESS: Bitter/Metallic taste inferred from Low Resonance + High Pressure.")
 
     print("\n" + "="*50)
 

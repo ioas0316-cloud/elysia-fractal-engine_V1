@@ -81,11 +81,15 @@ class SensoryPacket:
     """
     Represents the 'Human Standard' perception of the 4D Field.
     Maps hyperspace fields to somatic senses.
+    Now expanded to include Olfactory (Smell) and Gustatory (Taste).
     """
     visual_clarity: float = 0.0      # X-Field: Texture/Sight
     auditory_resonance: float = 0.0  # Y-Field: Harmony/Hearing
     haptic_pressure: float = 0.0     # W-Field: Gravity/Touch
     vestibular_balance: float = 0.0  # Z-Field: Spin/Balance
+
+    olfactory_essence: float = 0.0   # Y-Gradient: Smell (Change in Frequency)
+    gustatory_chemistry: float = 0.0 # Resonance * W: Taste (Consumable Energy)
 
     narrative: str = ""              # Cognitive interpretation
 
@@ -95,6 +99,8 @@ class SensoryPacket:
             "hearing": self.auditory_resonance,
             "touch": self.haptic_pressure,
             "balance": self.vestibular_balance,
+            "smell": self.olfactory_essence,
+            "taste": self.gustatory_chemistry,
             "narrative": self.narrative
         }
 
@@ -364,6 +370,7 @@ class PhysicsWorld:
         Perception-Field Mapping:
         The Soul projects its internal state (Phase/Frequency) onto the Field via the Hypersphere (Orientation).
         Returns a SensoryPacket (Human Standard).
+        Now includes Olfactory (Frequency Gradient) and Gustatory (Resonance Density).
         """
         if not entity.soul:
              return SensoryPacket()
@@ -372,42 +379,69 @@ class PhysicsWorld:
         forward_ref = Vector3(0, 0, 1)
         gaze_dir = entity.soul.orientation.rotate(forward_ref)
 
-        # 2. Sample the Field
+        # 2. Sample the Field at Target
         target_pos = entity.physics.position + gaze_dir * range_dist
         target_pos4 = Vector4(0, target_pos.x, target_pos.y, target_pos.z)
+
+        # Sample Field at Observer (for gradient/contrast)
+        obs_pos = entity.physics.position
+        obs_pos4 = Vector4(0, obs_pos.x, obs_pos.y, obs_pos.z)
 
         # Field values: W (Scale), X (Texture), Y (Freq), Z (Spin)
         field_vals = self.field_system.spatial_map.sample_field(target_pos4, current_tick=self.field_system.time_tick)
         w, x, y, z = field_vals
 
-        # 3. Calculate Resonance
+        obs_vals = self.field_system.spatial_map.sample_field(obs_pos4, current_tick=self.field_system.time_tick)
+        obs_y = obs_vals[2] # Observer local frequency
+
+        # 3. Calculate Metrics
+
+        # Resonance (Hearing)
         freq_diff = abs(entity.soul.frequency - y)
         resonance = 1.0 / (1.0 + freq_diff)
 
+        # Gradient (Smell): Change in Y-Field (Frequency) over the gaze vector
+        # Measures the "Scent Trail"
+        y_gradient = abs(y - obs_y)
+        smell_intensity = y_gradient * 0.1 # Scaling
+
+        # Consumable Energy (Taste): Density (W) * Resonance
+        # High Energy + High Resonance = Sweet/Rich
+        # High Energy + Low Resonance = Bitter/Rotten
+        taste_value = w * resonance
+
         # 4. Map to Human Senses
-        # Visual (X): 0.0=Blind/Fog, 1.0=Clear
         vision = x
-
-        # Auditory (Y): Resonance + Phase
-        # Hearing the "Song" of the world.
         hearing = resonance
-
-        # Haptic (W): Density/Gravity
-        # High W = Heavy/Oppressive
         touch = w
-
-        # Vestibular (Z): Spin/Vertigo
-        # High Z = Dizziness
         balance = z
+        smell = smell_intensity
+        taste = taste_value
 
         # 5. Narrative Interpretation
         narrative = ""
+
+        # Base Atmosphere
         if resonance > 0.9:
             narrative = "I feel a profound peace."
         elif resonance < 0.1:
             narrative = "The world feels chaotic and alien."
         else:
             narrative = "I sense a mixture of familiar and strange."
+
+        # Scent
+        if smell > 2.0:
+            if y > 100: narrative += " A sharp, metallic scent hangs in the air."
+            elif y < 0: narrative += " The air smells of damp earth and decay."
+            else: narrative += " A strong, complex aroma wafts nearby."
+        elif smell > 0.5:
+            if y > 50: narrative += " A faint floral scent."
+            else: narrative += " A subtle musky odor."
+
+        # Taste (if close/intense)
+        if taste > 5.0:
+            if resonance > 0.8: narrative += " The atmosphere tastes sweet and nourishing."
+            else: narrative += " A bitter, metallic taste fills my mouth."
 
         if touch > 2.0:
             narrative += " The air is heavy."
@@ -419,6 +453,8 @@ class PhysicsWorld:
             auditory_resonance=hearing,
             haptic_pressure=touch,
             vestibular_balance=balance,
+            olfactory_essence=smell,
+            gustatory_chemistry=taste,
             narrative=narrative
         )
 
