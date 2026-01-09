@@ -24,15 +24,15 @@ The engine is modularized into two distinct layers:
 - **The Core Engine (`elysia_engine`)**: The fundamental physics simulation layer (PhysicsWorld, SoulTensor, Yggdrasil).
 - **The Living Soul Plugin (`elysia_core`)**: The optional sentient layer (ResonanceEngine, Chronos, Hippocampus).
 
-### 🧠 Feature Spotlight: Hypersphere Memory
+### 🧠 Feature Spotlight: Hypersphere Memory & Field Law
 
-Elysia now features **Hypersphere Memory**, a 4D associative memory system that organizes data by **Meaning** (Logic, Emotion, Intent) rather than address.
+Elysia features a groundbreaking **Field-based Architecture** optimized for maximum simulation depth on minimal hardware (running efficiently on a GTX 1060 3GB).
 
-*   **No Linear Vectors:** Uses **Quaternions** for coordinate representation.
-*   **Resonance Retrieval:** Finds data based on "Musical Harmony" (Phase/Frequency match).
-*   **Psychology Mapping:** Automatically maps human intent to 4D coordinates.
+*   **Field-based Law (Eulerian):** Interactions are mediated by a shared "Void" (Field), shifting complexity from $O(N^2)$ to $O(Res)$.
+*   **Fractal Spatial Hashing:** A sparse memory structure that only calculates "blooming" space, allowing for infinite universes.
+*   **Geometric Algebra (Rotors):** 4D Rotations are handled by highly efficient **Rotors** instead of heavy matrix operations.
 
-[👉 Read the Hypersphere Memory Doctrine](docs/03_System/HYPERSPHERE_MEMORY.md)
+[👉 Read the Field Architecture Doctrine](docs/FIELD_ARCHITECTURE_KR.md)
 
 ### 🚀 Quick Start
 

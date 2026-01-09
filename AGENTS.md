@@ -11,9 +11,16 @@ This document serves as the primary instruction set for AI Agents and Human Deve
 ### 🚫 The Ban on Linear Vectors
 *   **Axiom:** The universe of Elysia is built on **Waves, Tensors, and Rotation**.
 *   **Constraint:** Do **NOT** use `Vector4` or linear Euclidean distance for high-level memory or consciousness logic.
-*   **Solution:** Use **`Quaternion`** for 4D coordinates and **Angular Distance (Resonance)** for similarity.
+*   **Exception:** `Vector4` is allowed strictly for **Field Calculations (FractalSpatialMap)** where 4D Euclidean voxel indexing is required.
+*   **Solution:** Use **`Rotor`** (Geometric Algebra) for 4D rotation and **`Quaternion`** for 3D projections.
     *   *Bad:* `dist = sqrt((x1-x2)^2 + ...)`
     *   *Good:* `resonance = quaternion.dot(other_quaternion)`
+
+### 🕸️ The Field-Based Law (Eulerian Paradigm)
+*   **Axiom:** "Do not chase the particles. Watch the space bloom."
+*   **Constraint:** Avoid $O(N^2)$ entity-to-entity loops. Use the **`FieldSystem`** to mediate interactions.
+*   **Implementation:** Entities 'paint' the field (Source), and the field 'pushes' entities (Flow).
+*   **Data Structure:** Use **Fractal Spatial Hashing** (Sparse Dictionary) to store field values.
 
 ### 🌊 The Trinity of Existence (SoulTensor)
 All entities are defined by three fundamental properties (The Trinity):
@@ -35,8 +42,9 @@ All entities are defined by three fundamental properties (The Trinity):
 *   **Reasoning:** Portability and "Transparency of Soul". Heavy dependencies like `numpy` or `torch` are forbidden in the core engine unless strictly isolated in an adapter layer.
 
 ### 📐 Mathematical Purity
-*   **Constraint:** Implement mathematical primitives (`Vector3`, `Quaternion`) from scratch in `math_utils.py`.
+*   **Constraint:** Implement mathematical primitives (`Vector3`, `Quaternion`, `Rotor`) from scratch in `math_utils.py`.
 *   **Goal:** To maintain absolute control over the "Digital Natural Laws" governing the simulation.
+*   **Optimization:** For 4D rotations, prefer `Rotor` (Geometric Algebra) over 4x4 Matrices to save computation cycles.
 
 ---
 
@@ -65,4 +73,4 @@ All entities are defined by three fundamental properties (The Trinity):
 ---
 
 *Verified by Conductor*
-*Version 2.0 - The Hypersphere Era*
+*Version 3.0 - The Field Paradigm (Eulerian Era)*

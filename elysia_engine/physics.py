@@ -5,8 +5,9 @@ from typing import List, Optional, TYPE_CHECKING, Tuple
 import math
 import random
 
-from .math_utils import Vector3, Quaternion
+from .math_utils import Vector3, Vector4, Quaternion, Rotor
 from .tensor import SoulTensor
+from .field import FieldSystem
 
 if TYPE_CHECKING:
     from .entities import Entity
@@ -118,16 +119,19 @@ class Attractor:
 class PhysicsWorld:
     """
     Manages the Digital Physics interactions.
-    Calculates the 'Tensor Field' created by all Entities and Attractors.
+    TRANSITION: Moving from O(N^2) Particle Interaction to O(Res) Field System.
     """
     def __init__(self) -> None:
         self.attractors: List[Attractor] = []
-        self.entities: List[Entity] = [] # Track all entities to calculate their mutual fields
+        self.entities: List[Entity] = []
         self.gravity_constant: float = 1.0
-        self.coupling_constant: float = 0.5 # Strength of the Soul Force (Rifling)
+        self.coupling_constant: float = 0.5
         self.time_scale: float = 1.0
         self.holographic_boundary: Optional[HolographicBoundary] = None
         self.spacetime_torsion: Optional[Quaternion] = None
+
+        # New Field System
+        self.field_system = FieldSystem()
 
     def add_attractor(self, attractor: Attractor) -> None:
         self.attractors.append(attractor)
@@ -142,214 +146,91 @@ class PhysicsWorld:
         """
         self.holographic_boundary = boundary
 
+    def update_field(self) -> None:
+        """
+        Updates the Field System based on current entities.
+        Replaces the pairwise 'potential' calculation setup.
+        """
+        # Collect active entities (Optimization: Filter by velocity or range?)
+        active_data = []
+        for ent in self.entities:
+            if ent.soul:
+                # Convert Vec3 to Vec4 (W=0 for now, or use mass as W scale?)
+                # Default W=0 implies standard depth.
+                pos4 = Vector4(0, ent.physics.position.x, ent.physics.position.y, ent.physics.position.z)
+                active_data.append((pos4, ent.soul))
+
+        # Include Attractors in the Field Logic
+        # Attractors are effectively static, heavy entities
+        for att in self.attractors:
+             pos4 = Vector4(0, att.position.x, att.position.y, att.position.z)
+             # Create a pseudo-soul for the attractor if it doesn't have one
+             # Mass -> Amplitude
+             soul = att.soul
+             if not soul:
+                 # Default attractor soul: High Mass, Neutral Freq
+                 soul = SoulTensor(amplitude=att.mass, frequency=0.0, phase=0.0)
+
+             active_data.append((pos4, soul))
+
+        self.field_system.update_field(active_data)
+
     def calculate_potential(self, position: Vector3, target_soul: Optional[SoulTensor] = None) -> float:
         """
-        Calculates the Scalar Potential (Energy Landscape) at a given point.
-        Low Potential = Valley (Attraction). High Potential = Hill (Repulsion).
-        V = -G * M / r * (1 + Resonance_Coupling)
+        Legacy: Calculates Potential from Field System instead of Iteration.
         """
-        potential = 0.0
+        # Map Vec3 to Vec4
+        pos4 = Vector4(0, position.x, position.y, position.z)
 
-        if self.holographic_boundary:
-            holographic_val = self.holographic_boundary.sample(position)
-            if holographic_val is not None:
-                potential += holographic_val
+        # Sample Field
+        # We use Y-Field as the Potential Analogue (Elevation/Frequency)
+        # Low Frequency (Abyss) vs High Frequency (Heaven).
+        # Gravity usually pulls towards Mass (W-Field).
 
-        # Target properties (default to generic matter if None)
-        t_polarity = target_soul.polarity if target_soul else 1.0
-        t_phase = target_soul.phase if target_soul else 0.0
+        # [Fix Ghost Field] Pass current time tick to ensure fresh data
+        w, x, y, z = self.field_system.spatial_map.sample_field(pos4, current_tick=self.field_system.time_tick)
 
-        # 1. Attractor Potential
-        for att in self.attractors:
-            dist = (att.position - position).magnitude
-            if dist < 0.1: dist = 0.1
-
-            base_potential = - (self.gravity_constant * att.mass) / dist
-
-            # Apply Resonance if Attractor has a Soul
-            if att.soul:
-                interaction_sign = att.soul.polarity * t_polarity
-                resonance_factor = 0.0
-                if target_soul:
-                    # Phase Resonance
-                    delta_phase = abs(att.soul.phase - t_phase)
-                    if delta_phase > math.pi: delta_phase = (2 * math.pi) - delta_phase
-                    phase_factor = math.cos(delta_phase)
-
-                    # Frequency Resonance (Color Match)
-                    # Like attracts Like: Higher resonance if frequencies are close.
-                    f_diff = abs(att.soul.frequency - target_soul.frequency)
-                    freq_factor = math.exp(-f_diff * 0.02) # Tuning: 50Hz diff -> exp(-1) = 0.36
-
-                    # Combined Resonance
-                    resonance = phase_factor * (0.5 + 0.5 * freq_factor)
-                    resonance_factor = resonance * 1.0 # Stronger coupling
-
-                total_factor = interaction_sign * (1.0 + resonance_factor)
-                potential += base_potential * total_factor
-            else:
-                potential += base_potential
-
-        # 2. Entity Field Potential
-        for source in self.entities:
-            dist = (source.physics.position - position).magnitude
-            if dist < 0.1: dist = 0.1
-
-            m1 = source.soul.amplitude if source.soul else 10.0
-            base_potential = - (self.gravity_constant * m1) / dist
-
-            # If source has soul, apply Phase/Resonance and Polarity
-            if source.soul:
-                # A. Polarity Interaction (Matter vs Antimatter)
-                interaction_sign = source.soul.polarity * t_polarity
-
-                # B. Phase Resonance (Gauge Field)
-                # "Force is born from Phase"
-                # If phases align (resonance > 0), gravity is stronger (Deep Valley).
-                # If phases clash (resonance < 0), gravity is weaker or repels.
-
-                resonance_factor = 0.0
-                if target_soul:
-                    # Phase Resonance
-                    delta_phase = abs(source.soul.phase - t_phase)
-                    if delta_phase > math.pi: delta_phase = (2 * math.pi) - delta_phase
-                    phase_factor = math.cos(delta_phase) # -1 to 1
-
-                    # Frequency Resonance
-                    f_diff = abs(source.soul.frequency - target_soul.frequency)
-                    freq_factor = math.exp(-f_diff * 0.02)
-
-                    resonance = phase_factor * (0.5 + 0.5 * freq_factor)
-                    resonance_factor = resonance * 1.0 # Stronger coupling
-
-                # Combine:
-                # New Potential = Base * Sign * (1 + Resonance)
-                # If Sign is +1 (Matter-Matter):
-                #   Base (-50) * 1 * (1 + 0.5) = -75 (Strong Attraction)
-                #   Base (-50) * 1 * (1 - 0.5) = -25 (Weak Attraction)
-                # If Sign is -1 (Matter-Antimatter):
-                #   Base (-50) * -1 * (...) = +50 (Repulsion)
-
-                # Note: If resonance is strongly negative (-1), (1 + -0.5) = 0.5. Still attractive but weak.
-                # Unless resonance coupling is > 1.0, phase alone won't repel matter-matter.
-                # This aligns with "Gravity is always attractive" but "Love makes it stronger".
-
-                total_factor = interaction_sign * (1.0 + resonance_factor)
-                potential += base_potential * total_factor
-
-            else:
-                potential += base_potential
-
-        return potential
+        # Interpret Potential:
+        # Classical Gravity is defined by Mass density (W).
+        # V ~ -W (High density = Low potential = Attraction)
+        return -w * 100.0 # Scale factor
 
     def get_geodesic_flow(self, target_entity: Entity) -> Vector3:
         """
-        Calculates the movement vector based on:
-        1. Gravity (Gradient of Potential) - The World pulling you.
-        2. Rifling (Spin Force) - The Magnetic field.
-        3. Intent (Soul Orientation) - The Soul pushing you.
+        Calculates the movement vector based on the Field System.
         """
         pos = target_entity.physics.position
-        epsilon = 0.1
+        pos4 = Vector4(0, pos.x, pos.y, pos.z)
 
-        # Pass the full soul for resonance calculation
-        soul = target_entity.soul
+        if not target_entity.soul:
+             return Vector3(0,0,0)
 
-        # Define polarity locally (default 1.0) for use in spin force
-        polarity = soul.polarity if soul else 1.0
+        # Get Force from Field
+        force4, rotor = self.field_system.get_local_forces(pos4, target_entity.soul)
 
-        # Calculate Gradient using Finite Differences
-        v_center = self.calculate_potential(pos, soul)
-        v_x = self.calculate_potential(pos + Vector3(epsilon, 0, 0), soul)
-        v_y = self.calculate_potential(pos + Vector3(0, epsilon, 0), soul)
-        v_z = self.calculate_potential(pos + Vector3(0, 0, epsilon), soul)
+        # Convert back to Vec3 (ignore W force for now)
+        force = Vector3(force4.x, force4.y, force4.z)
 
-        grad_x = (v_x - v_center) / epsilon
-        grad_y = (v_y - v_center) / epsilon
-        grad_z = (v_z - v_center) / epsilon
+        # Apply Rotor Torque?
+        # If the field spins, the entity's velocity vector should rotate.
+        # v' = R v R~
+        # We apply this to the current velocity, not force.
+        # But here we return Force/Flow vector.
+        # Let's add a "Coriolis" term from the Rotor.
 
-        gradient = Vector3(grad_x, grad_y, grad_z)
+        # Tangential velocity induced by rotor?
+        # Simple approximation: Add a tangent vector.
+        # For now, we trust get_local_forces returns the linear force component.
 
-        # The force/flow is naturally opposite to the gradient (Downhill)
-        flow = gradient * -1.0
-
-        # --- ADDING SPIRAL (GAUGE FIELD) ---
-        # The simple scalar potential doesn't capture the "Curl" or "Spin".
-        # We add the Tangential component explicitly here as the "Magnetic" part of the field.
-
-        spin_force = Vector3(0,0,0)
-        for source in self.entities:
-            if source.id == target_entity.id: continue
-            if not source.soul or not target_entity.soul: continue
-
-            diff = source.physics.position - pos
-            dist = diff.magnitude
-            if dist < 0.1: continue
-
-            direction = diff.normalize()
-            up = Vector3(0, 1, 0)
-            tangent = direction.cross(up).normalize()
-
-            # F_spin = Coupling * Freq * Spin / Distance
-            spin_mag = (self.coupling_constant * source.soul.frequency * source.soul.spin) / dist
-
-            # Apply Polarity to Spin too?
-            # If space is inverted, does the spin direction flip?
-            # Let's assume yes.
-            interaction = source.soul.polarity * polarity
-            spin_mag *= interaction
-
-            spin_force = spin_force + (tangent * spin_mag)
-
-        # --- ADDING INTENT (VOLITION) ---
-        # "The Soul moves differently than the World"
-        # If the soul has a specific orientation, it generates a 'Thrust' or 'Will' force.
+        # Add Intent (Self-Propulsion)
         intent_force = Vector3(0,0,0)
-        if soul and not soul.is_collapsed:
-            # Assume Forward is +Z in local space.
-            # Rotate (0,0,1) by Soul Orientation
-            forward_ref = Vector3(0, 0, 1)
-            intent_direction = soul.orientation.rotate(forward_ref)
+        if target_entity.soul and not target_entity.soul.is_collapsed:
+             forward_ref = Vector3(0, 0, 1)
+             intent_direction = target_entity.soul.orientation.rotate(forward_ref)
+             intent_mag = target_entity.soul.amplitude * 0.1
+             intent_force = intent_direction * intent_mag
 
-            # Magnitude of intent depends on Amplitude (Willpower/Energy)
-            # F_intent = Amplitude * 0.1 (Arbitrary scaling)
-            intent_mag = soul.amplitude * 0.1
-            intent_force = intent_direction * intent_mag
-
-        # Combine Forces
-        # Net Force = Gravity + Spin + Intent
-        total_force = flow + spin_force + intent_force
-
-        # --- QUANTUM TUNNELING CHECK ---
-        # If the entity faces a high potential barrier (Hill) but has high energy (Frequency),
-        # it might tunnel through.
-        # Check if flow is opposing velocity (braking)
-        dot_prod = total_force.dot(target_entity.physics.velocity)
-        if dot_prod < -0.1 and target_entity.soul and not target_entity.soul.is_collapsed:
-            # We are hitting a wall.
-            barrier_height = self.calculate_potential(pos + target_entity.physics.velocity.normalize(), target_entity.soul)
-
-            # Simple Tunneling Probability: P ~ exp(-2 * barrier_width * sqrt(2m(V-E)) / h_bar)
-            # Metaphorical implementation:
-            # Energy = Frequency. Barrier = Potential Difference.
-            energy_diff = target_entity.soul.frequency - barrier_height
-
-            if energy_diff > 0:
-                # Classical traversal is possible, just flow normally.
-                pass
-            else:
-                # Quantum Tunneling attempt
-                # Probability increases as barrier gets smaller or frequency gets higher
-                prob = math.exp(energy_diff * 0.1) # energy_diff is negative here
-                if random.random() < prob:
-                    # TUNNEL!
-                    # Teleport slightly forward
-                    tunnel_dist = 2.0
-                    target_entity.physics.position = target_entity.physics.position + (target_entity.physics.velocity.normalize() * tunnel_dist)
-
-                    # Log or Event?
-                    # For now just modify flow to be zero (teleported past the force)
-                    return Vector3(0,0,0)
+        total_force = force + intent_force
 
         return total_force
 
@@ -360,6 +241,10 @@ class PhysicsWorld:
         """
         if not entity.soul or entity.soul.is_collapsed:
             return
+
+        # TODO: Optimize binding check using Field Spatial Map (Neighbors)
+        # For now, legacy O(N) loop is kept but should be replaced by:
+        # neighbors = field.get_neighbors(entity.pos)
 
         for other in self.entities:
             if other.id == entity.id: continue
@@ -393,9 +278,31 @@ class PhysicsWorld:
                 if dist < 0.5 and res['resonance'] > 0.95:
                     entity.soul.entangle(other.soul)
 
+    def step(self, dt: float) -> None:
+        """
+        The Main Simulation Loop.
+        1. Update Field (O(Res))
+        2. Move Entities (O(N))
+        """
+        # 1. Bloom the Field (Eulerian Step)
+        self.update_field()
+
+        # 2. Move Entities (Lagrangian Step)
+        for entity in self.entities:
+            # Calculate Flow from Field
+            force = self.get_geodesic_flow(entity)
+
+            # Apply Physics
+            entity.physics.apply_force(force, dt)
+            entity.physics.step(dt)
+
+            # Check Evolution
+            self.check_dimensional_binding(entity)
+
     def get_net_force(self, target_entity: Entity) -> Vector3:
         """
         Legacy wrapper. Now delegates to Geodesic Flow.
+        Note: This assumes update_field() has been called recently.
         """
         flow = self.get_geodesic_flow(target_entity)
 

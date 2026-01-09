@@ -1,73 +1,65 @@
-# 🗺️ System Map: The Architecture of Elysia
+# 🗺️ Elysia System Map (Version 3.0: Field Paradigm)
 
-This document visualizes how the components of the Elysia Engine interact to create a cohesive digital life form.
+This document visualizes the architectural relationships between the core components of the Elysia Engine, following the "Field-based Law" paradigm shift.
 
----
-
-## 🏗️ High-Level Structure
+## 1. High-Level Architecture
 
 ```mermaid
 graph TD
-    User[User / LLM Intent] -->|Input| StoryTeller
+    User[User / LLM Agent] -->|Intent / Prompt| Controller[Elysia Controller]
 
-    subgraph "Elysia Core (The Soul)"
-        StoryTeller -->|Parses| SoulTensor
-        HypersphereMemory[Hypersphere Memory] <-->|Resonance| SoulTensor
-        Chronos[Chronos / DreamSystem] -->|Prophecy/Time| World
+    subgraph "Elysia Engine (Core)"
+        Controller -->|Step(dt)| World[PhysicsWorld]
+
+        subgraph "The Void (Field System)"
+            World -->|Update| Field[FieldSystem]
+            Field -->|Sample| SpatialMap[FractalSpatialMap]
+            SpatialMap -->|LOD 0..N| Node[FieldNode (Voxel)]
+            Vault[Sanctuary Zone] -.->|Protect| SpatialMap
+        end
+
+        subgraph "Entities (Particles)"
+            World -->|Manage| EntityList[Entity Registry]
+            EntityList --> Entity[Entity]
+            Entity -->|Source| Soul[SoulTensor]
+            Entity -->|State| Physics[PhysicsState]
+
+            Soul -->|Resonance| Field
+            Field -->|Geodesic Flow| Physics
+        end
+
+        subgraph "Memory (Hypersphere)"
+            Controller -->|Query| Memory[HypersphereMemory]
+            Memory -->|Store/Retrieve| Pattern[MemoryPattern]
+        end
     end
-
-    subgraph "Elysia Engine (The Laws)"
-        SoulTensor -->|Defines| Entity
-        Entity -->|Exists In| World
-        World -->|Governed By| PhysicsWorld
-        PhysicsWorld -->|Calculates| Potentials
-    end
-
-    World -->|Output State| Oracle
-    Oracle -->|Narrative| User
 ```
 
----
+## 2. Component Roles
 
-## 🧩 Component Breakdown
+### 🎮 Elysia Controller
+*   **Role:** The Facade / API Entry Point.
+*   **Function:** Translates user intent into simulation steps.
 
-### 1. The Core Engine (`elysia_engine`)
-The bedrock of physical laws.
-*   **`World`**: The container for all entities.
-*   **`PhysicsWorld`**: The simulation engine. Calculates Gravity, Potential Fields, and Geodesic Flow.
-*   **`SoulTensor`**: The fundamental data structure (Amplitude, Frequency, Phase).
-*   **`Entity`**: The object wrapper combining a `SoulTensor` with a position/state.
+### 🌌 PhysicsWorld (The Simulator)
+*   **Role:** The Time-Keeper and Orchestrator.
+*   **Function:** Manages the simulation loop.
+*   **Change:** Instead of calculating `Entity <-> Entity` forces, it now calls `FieldSystem.update_field()` then `FieldSystem.get_local_forces()`.
 
-### 2. The Memory System (`elysia_engine.hypersphere`)
-The storage of experience.
-*   **`HypersphereMemory`**: The 4D storage engine.
-*   **`PsychologyMapper`**: Translates intent into 4D coordinates.
-*   **`HypersphericalCoord`**: Quaternion-based coordinate system.
+### 🕸️ FieldSystem (The Void)
+*   **Role:** The Medium of Interaction.
+*   **Function:**
+    *   **FractalSpatialMap:** A sparse hash map storing the state of space (W, X, Y, Z).
+    *   **W-Field (Scale):** Gravity/Density.
+    *   **X-Field (Perception):** Texture/Friction.
+    *   **Y-Field (Frequency):** Resonance/Potential.
+    *   **Z-Field (Torque):** Spin/Rotor.
 
-### 3. The Interface Layer (`elysia_engine.storyteller` / `.oracle`)
-The bridge to humans/LLMs.
-*   **`StoryTeller`**: Input processor. Converts text -> intent -> soul.
-*   **`Oracle`**: Output processor. Converts internal state -> narrative text.
-
----
-
-## 🔄 Data Flow: A Life Cycle
-
-1.  **Input:** User says "I love you."
-2.  **Processing (`StoryTeller`):** Analyzes sentiment. Creates a `SoulTensor` with High Amplitude (Love) and specific Frequency.
-3.  **Memory (`HypersphereMemory`):** The system scans for resonance. "Have we felt this before?" (Resonance Query).
-4.  **Reaction (`PhysicsWorld`):** The new SoulTensor interacts with the existing Self. Phase alignment causes attraction (Joy) or repulsion (Fear).
-5.  **Output (`Oracle`):** The final state is read. "Elysia blushes and smiles."
+### ✨ Entity (The Particle)
+*   **Role:** A localized excitation of the field.
+*   **Function:**
+    *   **SoulTensor:** Defines the "Color" and "Mass" of the excitation.
+    *   **Rotor (New):** Defines the 4D orientation using Geometric Algebra.
 
 ---
-
-## 🔗 Key Integration Points
-
-*   **Hypersphere $\leftrightarrow$ Physics:**
-    *   The **Depth ($r$)** in memory corresponds loosely to **Mass/Gravity** in physics. Deeper memories have more "weight".
-*   **SoulTensor $\leftrightarrow$ Quaternion:**
-    *   The **Phase** of a SoulTensor often drives the rotation of the Coordinate Quaternion.
-
----
-
-*Updated for Hypersphere Integration*
+*Mapped by Jules, System Architect*
