@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Optional, TYPE_CHECKING, Tuple
+from typing import List, Optional, TYPE_CHECKING, Tuple, Dict, Any
 import math
 import random
 
@@ -131,6 +131,7 @@ class PhysicsWorld:
     Manages the Digital Physics interactions.
     TRANSITION: Moving from O(N^2) Particle Interaction to O(Res) Field System.
     Now includes 'Atmospheric Governance' to manage complexity and entropy.
+    Now includes 'Perception-Field Mapping' to handle Soul Gaze and Experience.
     """
     def __init__(self) -> None:
         self.attractors: List[Attractor] = []
@@ -216,32 +217,22 @@ class PhysicsWorld:
         # V ~ -W (High density = Low potential = Attraction)
         return -w * 100.0 # Scale factor
 
-    def get_geodesic_flow(self, target_entity: Entity) -> Vector3:
+    def get_geodesic_flow(self, target_entity: Entity) -> Tuple[Vector3, Optional[Rotor]]:
         """
         Calculates the movement vector based on the Field System.
+        Now returns Tuple(Force, Rotor) to allow torque application.
         """
         pos = target_entity.physics.position
         pos4 = Vector4(0, pos.x, pos.y, pos.z)
 
         if not target_entity.soul:
-             return Vector3(0,0,0)
+             return Vector3(0,0,0), None
 
         # Get Force from Field
         force4, rotor = self.field_system.get_local_forces(pos4, target_entity.soul)
 
         # Convert back to Vec3 (ignore W force for now)
         force = Vector3(force4.x, force4.y, force4.z)
-
-        # Apply Rotor Torque?
-        # If the field spins, the entity's velocity vector should rotate.
-        # v' = R v R~
-        # We apply this to the current velocity, not force.
-        # But here we return Force/Flow vector.
-        # Let's add a "Coriolis" term from the Rotor.
-
-        # Tangential velocity induced by rotor?
-        # Simple approximation: Add a tangent vector.
-        # For now, we trust get_local_forces returns the linear force component.
 
         # Add Intent (Self-Propulsion)
         intent_force = Vector3(0,0,0)
@@ -253,7 +244,7 @@ class PhysicsWorld:
 
         total_force = force + intent_force
 
-        return total_force
+        return total_force, rotor
 
     def check_dimensional_binding(self, entity: Entity) -> None:
         """
@@ -346,6 +337,102 @@ class PhysicsWorld:
         if entropy > 10.0:
             entity.physics.velocity *= 0.95 # Air resistance/Drag
 
+    def perceive(self, entity: Entity, range_dist: float = 2.0) -> Dict[str, Any]:
+        """
+        Perception-Field Mapping:
+        The Soul projects its internal state (Phase/Frequency) onto the Field via the Hypersphere (Orientation).
+
+        1. Projects Gaze Vector using Soul Orientation.
+        2. Samples Field at gaze target.
+        3. Calculates Resonance (Interference Pattern) between Soul and Field.
+        """
+        if not entity.soul:
+             return {"type": "void", "intensity": 0.0}
+
+        # 1. Determine Gaze Direction (Hypersphere Rotation)
+        # Orientation is a Quaternion. Forward vector is usually Z+ (0,0,1).
+        forward_ref = Vector3(0, 0, 1)
+        gaze_dir = entity.soul.orientation.rotate(forward_ref)
+
+        # 2. Sample the Field at the Gaze Point (External World)
+        target_pos = entity.physics.position + gaze_dir * range_dist
+        target_pos4 = Vector4(0, target_pos.x, target_pos.y, target_pos.z)
+
+        # Field values: W (Scale), X (Texture), Y (Freq), Z (Spin)
+        field_vals = self.field_system.spatial_map.sample_field(target_pos4, current_tick=self.field_system.time_tick)
+        field_freq = field_vals[2] # Y-Field is Frequency
+
+        # 3. Calculate Resonance (Fractal Interference)
+        # Resonance = 1 / (1 + |Freq_Soul - Freq_Field|)
+        freq_diff = abs(entity.soul.frequency - field_freq)
+        resonance = 1.0 / (1.0 + freq_diff) # 1.0 = Perfect match, -> 0 as diff grows
+
+        # 4. Construct Experience
+        experience = {
+            "gaze_direction": gaze_dir,
+            "field_frequency": field_freq,
+            "resonance": resonance,
+            "clarity": field_vals[1], # X-Field is Perception/Clarity
+            "interference_pattern": math.cos(entity.soul.phase - 0.0) * resonance, # Simple wave interference
+            "narrative": ""
+        }
+
+        # 5. Narrative Interpretation (The "Mirror")
+        if resonance > 0.9:
+            experience["narrative"] = "I see myself in the world. (High Resonance)"
+        elif resonance < 0.1:
+             experience["narrative"] = "The world is alien noise. (Low Resonance)"
+        else:
+             experience["narrative"] = "I see a distorted reflection. (Partial Resonance)"
+
+        return experience
+
+    def apply_soul_torque(self, entity: Entity, rotor: Optional[Rotor]) -> None:
+        """
+        Applies the Field's Spin (Z-Field Torque) to the Soul's Orientation.
+        This represents the 'Hypersphere Stabilization' or 'Gyroscope'.
+        """
+        if not entity.soul or not rotor:
+            return
+
+        # Rotor is 4D. Soul Orientation is 3D Quaternion.
+        # We assume the rotor represents a spatial rotation (xy, yz, zx planes).
+        # We extract a simplified axis-angle or convert directly if possible.
+        # For optimization, we take the 'xy' plane component of the rotor as Z-axis rotation?
+        # A full Rotor to Quaternion conversion is complex in Cl(4,0).
+        # But we know get_local_forces constructs the rotor from 'xy' plane angle.
+        # R = cos(t/2) - B_xy sin(t/2). This corresponds to Z-axis rotation.
+
+        # Extract angle from rotor.a (scalar part)
+        # cos(theta/2) = rotor.a
+        # theta = 2 * acos(a)
+        # Axis is determined by bivectors.
+        # If b_xy is dominant, it's Z-axis rotation.
+
+        # Simplification: Convert Rotor to Quaternion (assuming 3D subset)
+        # q = a + b_yz i + b_zx j + b_xy k ? (Dual mapping)
+        # standard: b_yz -> x, b_zx -> y, b_xy -> z
+
+        # Let's try to apply a small rotation based on rotor strength
+        # We trust the rotor is normalized.
+
+        # Mapping GA Bivectors to Quaternions:
+        # B_yz (plane yz) rotates around X -> q.x
+        # B_zx (plane zx) rotates around Y -> q.y
+        # B_xy (plane xy) rotates around Z -> q.z
+
+        # Note: Rotor definition in math_utils has b_xz, not b_zx. b_xz = -b_zx.
+
+        q_rot = Quaternion(
+            w = rotor.a,
+            x = -rotor.b_yz, # Convention check needed, assuming - due to duality
+            y = rotor.b_xz,  # b_xz is -b_zx
+            z = -rotor.b_xy
+        )
+
+        # Apply rotation: q_new = q_rot * q_old
+        entity.soul.orientation = (q_rot * entity.soul.orientation).normalize()
+
     def step(self, dt: float) -> None:
         """
         The Main Simulation Loop.
@@ -370,9 +457,15 @@ class PhysicsWorld:
                 continue
 
             # Standard Physics
-            force = self.get_geodesic_flow(entity)
+            force, rotor = self.get_geodesic_flow(entity)
+
+            # Apply Translation
             entity.physics.apply_force(force, dt)
             entity.physics.step(dt)
+
+            # Apply Rotation (Perception/Gyroscope)
+            self.apply_soul_torque(entity, rotor)
+
             self.check_dimensional_binding(entity)
 
             active_survivors.append(entity)
@@ -405,7 +498,7 @@ class PhysicsWorld:
         Legacy wrapper. Now delegates to Geodesic Flow.
         Note: This assumes update_field() has been called recently.
         """
-        flow = self.get_geodesic_flow(target_entity)
+        flow, _ = self.get_geodesic_flow(target_entity)
 
         # Check for Dimensional Evolution opportunities
         self.check_dimensional_binding(target_entity)
