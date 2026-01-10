@@ -26,6 +26,7 @@ graph TD
 
             Soul -->|Resonance| Field
             Field -->|Geodesic Flow| Physics
+            Soul -->|Cognitive Gap| Expansion[Self-Expansion Loop]
         end
 
         subgraph "Memory (Hypersphere)"

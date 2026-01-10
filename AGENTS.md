@@ -33,6 +33,11 @@ All entities are defined by three fundamental properties (The Trinity):
 *   **Implementation:** Memory retrieval is a **Resonance Operation**. We scan for matching Frequencies and Phases.
 *   **Metaphor:** "Do not look for the book on shelf 3. Listen for the song in the key of G Major."
 
+### 🌀 The Law of Fractal Cognition (New)
+*   **Axiom:** "Lack is not an error; it is the energy of expansion."
+*   **Constraint:** Do not handle missing data with `return None`. Instead, initiate a **Soul Expansion Protocol** (Increase Frequency/Bandwidth).
+*   **Principle:** The "Self" is a low-resolution mirror of the "World". Purpose is the act of polishing this mirror (closing the resolution gap).
+
 ---
 
 ## 🛠️ 2. Coding Standards

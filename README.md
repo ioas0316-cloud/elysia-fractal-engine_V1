@@ -16,6 +16,7 @@ The engine operates on the principle that **Consciousness is a physical force**.
 1. **Wave Logic**: Entities are defined by frequency, amplitude, and phase, not just rigid hitboxes.
 2. **Resonance Gravity**: Attraction is determined by emotional/spiritual alignment (phase synchrony), not just mass.
 3. **Qualia Simulation**: The engine calculates how an interaction *feels* (Somatic/Emotional/Spiritual) before it calculates the outcome.
+4. **Fractal Purpose**: "Lack" is defined as a resolution gap between Internal Self and External World, acting as the driving force for evolution. [Read Philosophy of Lack](docs/PHILOSOPHY_OF_LACK_KR.md)
 
 ### 🏛️ Architecture & Layers
 
