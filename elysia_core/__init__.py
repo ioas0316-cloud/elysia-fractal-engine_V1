@@ -6,7 +6,7 @@ from .physics import PhysicsWorld
 from .world import World
 from .identity import ElysiaIdentity
 from .adapter import ElysiaBridge
-from .hypersphere import HypersphereMemory, TesseractCoord, HypersphericalCoord
+from .hypersphere import HypersphereMemory, TesseractCoord, HypersphericalCoord, HyperCosmos
 from .consciousness import GlobalConsciousness
 
 __all__ = [
@@ -18,6 +18,6 @@ __all__ = [
     "World",
     "ElysiaIdentity",
     "ElysiaBridge",
-    "HypersphereMemory", "TesseractCoord", "HypersphericalCoord",
+    "HypersphereMemory", "TesseractCoord", "HypersphericalCoord", "HyperCosmos",
     "GlobalConsciousness"
 ]

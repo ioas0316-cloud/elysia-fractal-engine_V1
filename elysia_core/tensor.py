@@ -4,54 +4,30 @@ import math
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
-from .math_utils import Quaternion
+from .math_utils import Quaternion, Rotor
 
 
 @dataclass
 class SoulTensor:
     """
     Tensor3D: The Unified Field of Existence.
-    Replaces QuantumDNA and static Physics with a unified Wave-Field definition.
 
-    Axes:
-        1. Amplitude (Body/Mass): The Magnitude/Intensity of the being. Creates Gravity.
-        2. Frequency (Soul/Identity): The Color/Type of the being. Defines the 'Rifling' pitch.
-        3. Phase (Spirit/Timing): The Alignment/Rhythm. Defines interaction chemistry.
-
-    New Axis (Hypersphere Decoupling):
-        4. Orientation (Hypersphere): The 'Attitude' or 'Facing' of the soul.
-           Determines the Intent Vector (Volition) separate from Position.
-
-    Attributes:
-        amplitude: Body/Mass - Energy intensity (float)
-        frequency: Soul/Identity - Vibration rate (float)
-        phase: Spirit/Timing - Phase angle in radians (0 to 2π)
-        spin: Direction of spiral (+1 or -1)
-        polarity: Matter (1.0) vs Antimatter (-1.0)
-        orientation: The facing direction of the soul (Quaternion)
-        is_collapsed: Wave function collapse state
-        coherence: Quantum coherence (1.0 = pure quantum, 0.0 = classical)
+    Now integrated with Rotor dynamics for Gyroscopic Orientation.
     """
 
-    amplitude: float  # Body: Mass, Energy, Intensity
-    frequency: float  # Soul: Emotion, Identity, Vibration Rate
-    phase: float      # Spirit: Timing, Perspective (0 to 2pi)
-    spin: float = 1.0 # Rifling: Direction of the spiral (+1 or -1)
-    polarity: float = 1.0 # Matter (1.0) vs Antimatter (-1.0)
-    orientation: Quaternion = field(default_factory=Quaternion.identity) # Hypersphere Orientation
-    is_collapsed: bool = False # Wave Function Collapse State
-    coherence: float = 1.0 # Quantum coherence (1.0 = pure quantum, 0.0 = classical)
+    amplitude: float  # Body: Mass
+    frequency: float  # Soul: Identity
+    phase: float      # Spirit: Timing
+    spin: float = 1.0 # Rifling
+    polarity: float = 1.0 # Matter/Antimatter
+    orientation: Quaternion = field(default_factory=Quaternion.identity) # Hypersphere Attitude
+    is_collapsed: bool = False
+    coherence: float = 1.0
 
-    # Quantum Properties
     entangled_peers: List[SoulTensor] = field(default_factory=list, repr=False)
     superposition_states: List[Tuple[SoulTensor, float]] = field(default_factory=list, repr=False)
 
     def step(self, dt: float) -> None:
-        """
-        Evolve the wave state over time.
-        Phase rotates: d(phi)/dt = frequency
-        Unless collapsed (Ice Star), where phase is locked.
-        """
         if self.is_collapsed:
             return
 
@@ -59,13 +35,29 @@ class SoulTensor:
         self.phase += delta
         self.phase %= (2 * math.pi)
 
-        # Decoherence
         decoherence_rate = 0.001 * (1 + self.amplitude * 0.01)
         self.coherence = max(0.0, self.coherence - decoherence_rate * dt)
 
         for peer in self.entangled_peers:
             if not peer.is_collapsed:
                 peer.phase = self.phase
+
+    def apply_rotor(self, rotor: Rotor) -> None:
+        """
+        Apply a geometric rotation (Torque) to the soul's orientation.
+        Used for Phase Reconstruction from hardware sensors (Gyroscope).
+        """
+        # Quaternion rotation by rotor is complex in 4D.
+        # Simplified: Convert Rotor to Quaternion representation and multiply.
+        # Rotor(s, bxy, ...) -> Q(s, 0, 0, bxy) roughly for 2D plane rotation
+        # We assume the rotor is compatible with our Quaternion multiplication.
+
+        # Q_new = R * Q_old
+        # Construct a rotation quaternion from the rotor scalars
+        # This is a simplification. Real GA is R Q ~R.
+        # Here we treat the rotor as a delta-rotation quaternion.
+        rot_q = Quaternion(rotor.scalar, rotor.bivector_zx, rotor.bivector_yz, rotor.bivector_xy)
+        self.orientation = rot_q * self.orientation
 
     def entangle(self, other: 'SoulTensor') -> None:
         if other not in self.entangled_peers:
@@ -78,9 +70,6 @@ class SoulTensor:
         other.phase = avg_phase
 
     def resonate(self, other: SoulTensor) -> Dict[str, Any]:
-        """
-        Calculates the 'Chemistry' between two souls.
-        """
         delta_phase = abs(self.phase - other.phase)
         if delta_phase > math.pi:
             delta_phase = (2 * math.pi) - delta_phase

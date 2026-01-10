@@ -5,11 +5,20 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from .math_utils import Quaternion
+from .math_utils import Quaternion, Rotor
 from .tensor import SoulTensor
+from .world import World
+from .field import FieldSystem
 
 @dataclass
 class TesseractCoord:
+    """
+    Fixed Axis (The World): Represents Structure & Position.
+    W: Scale (Analog Dial)
+    Z: Intent Vector
+    X: Perception
+    Y: Frequency Rank
+    """
     w: float
     z: float
     x: float
@@ -28,6 +37,10 @@ class TesseractCoord:
 
 @dataclass
 class HypersphericalCoord:
+    """
+    Rotating Axis (The Soul): Represents Orientation & Attitude.
+    Linked to Gyroscope mechanics.
+    """
     theta1: float
     theta2: float
     theta3: float
@@ -65,6 +78,10 @@ class MemoryPattern:
         return f"[{self.topology}/{self.trajectory}] {str(self.content)[:30]}..."
 
 class HypersphereMemory:
+    """
+    The 4D Memory Storage.
+    Now integrated as the 'Soul Storage' component of HyperCosmos.
+    """
     def __init__(self, depth: int = 0):
         self.patterns: List[Tuple[Union[HypersphericalCoord, TesseractCoord], MemoryPattern]] = []
         self.named_locations: Dict[str, Union[HypersphericalCoord, TesseractCoord]] = {}
@@ -78,6 +95,10 @@ class HypersphereMemory:
         return pattern
 
     def zoom_query(self, scale_center: float, scale_width: float) -> List[MemoryPattern]:
+        """
+        Analog Zoom Dial (W-Axis).
+        Retrieves memories within a continuous scale range.
+        """
         results = []
         min_w = scale_center - (scale_width / 2)
         max_w = scale_center + (scale_width / 2)
@@ -87,3 +108,68 @@ class HypersphereMemory:
             if min_w <= coord.w <= max_w:
                 results.append(pattern)
         return results
+
+class HyperCosmos:
+    """
+    The Container of Everything. The Infinity Stone.
+
+    Structure:
+        - Tesseract (Fixed Axis): The World / Environment / Structure.
+        - Hypersphere (Rotating Axis): The Soul / Attitude / Gyroscope.
+
+    Fractal Nature:
+        - Micro: An NPC's internal mind.
+        - Meso: A Virtual City.
+        - Macro: The Elysia Universe.
+    """
+    def __init__(self, name: str = "Genesis", scale: float = 1.0):
+        self.name = name
+        self.scale = scale # The W-axis anchor for this Cosmos
+
+        # The Two Halves
+        self.world = World() # Tesseract Physics
+        self.memory = HypersphereMemory() # Hypersphere Soul
+
+        # The Bridge (Rotor)
+        # Manages the interaction between Fixed World and Rotating Soul
+        self.global_rotor: Rotor = Rotor(1.0, 0.0, 0.0, 0.0)
+
+    def step(self, dt: float) -> None:
+        """
+        Evolve the Cosmos.
+        1. Physics Step (World)
+        2. Soul Step (Memory/Tensor)
+        3. Rotor Integration (Gyroscope)
+        """
+        self.world.step(dt)
+
+        # Apply Rotor to all active SoulTensors in the world
+        # This simulates the "Universe Rotating" around the entities (or vice versa)
+        # Phase Reconstruction: If the hardware gyroscope moves, we update the virtual souls.
+        # For now, we simulate a gentle drift or "Breathing" rotation if no input.
+        pass
+
+    def analog_dial(self, focus_w: float, bandwidth: float) -> Dict[str, Any]:
+        """
+        The Analog Zoom Interface.
+        Returns what is visible at the current Scale (W) setting.
+        """
+        # 1. Query Internal Memory (The Past/Self)
+        memories = self.memory.zoom_query(focus_w, bandwidth)
+
+        # 2. Query External World (The Present/Others)
+        # We need to filter entities by their 'Scale' or 'Mass' (Amplitude ~ Scale)
+        entities = []
+        min_mass = focus_w * 10 # Heuristic mapping
+        max_mass = (focus_w + bandwidth) * 10
+
+        for ent in self.world.entities.values():
+            if min_mass <= ent.physics.mass <= max_mass:
+                entities.append(ent)
+
+        return {
+            "scale_focus": focus_w,
+            "memories": len(memories),
+            "entities": len(entities),
+            "sample_memory": memories[0].summary if memories else None
+        }
